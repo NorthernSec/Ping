@@ -8,7 +8,9 @@
 # Copyright (c)	2015	Pieter-Jan Moreels
 
 # Imports
+import sys
 
+import socket
 import argparse
 
 description='''Connects and interacts with the Ping server. '''
@@ -24,5 +26,20 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
 
-  if args.set-server-address: print(args.set-server-address)
-  elif args.set-user-name:    print(args.set-user-name)
+  #if args.set-server-address: print(args.set-server-address)
+  #elif args.set-user-name:    print(args.set-user-name)
+
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  addr = ('localhost', 10000)
+  print ('connecting to %s port %s' % addr)
+  sock.connect(addr)
+  try:
+    message = 'Ping test message'.encode('utf-8')
+    print ('Sending "%s"' % message)
+    sock.sendall(message)
+    while True:
+      data = sock.recv(2048)
+      print ('Received "%s"' % data.decode('utf-8'))
+  finally:
+    print('Closing socket')
+    sock.close()

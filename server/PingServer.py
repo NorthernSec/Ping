@@ -9,41 +9,23 @@
 # Copyright (c)	2015	Pieter-Jan Moreels
 
 # Imports
+import os
+import sys
+runPath = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(runPath)
 
 import socket
-import sys
 
-def handleConnection(conn, cl_addr):
-  try:
-    print('Connection from', client_address)
-    while True:
-      data = connection.recv(16)
-      if data:
-        handleData(data)
-      else:
-        break
-  finally:
-      connection.close()
-
-def handleData(data):
-  print('handles incomming data')
-
-def ping(user,passwd,chk):
-  print('handles ping')
-  #add "it's dangerous" package for signature
-
-def verifyUser(user,passwd):
-  print('verifies user in db')
-  # db struct: user name, hashed pass, join time, lastPing, default extension time, new death date, tresholds with actions
-  # maybe document oriented db
+from ClientThread import ClientThread
 
 if __name__ == '__main__':
   # Start server
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   addr = ('localhost', 10000)
-  print('Starting Ping on %s port %s' % server_address)
+  print('Starting Ping on %s port %s' % addr)
   sock.bind(addr)
   sock.listen(1)
   while True:
-    conn, cl_add = sock.accept()
-    handleConnection(conn, cl_addr)
+    (cl_sock, (cl_ip, cl_port)) = sock.accept()
+    thread=ClientThread(cl_ip, cl_port, cl_sock)
+    thread.start()
