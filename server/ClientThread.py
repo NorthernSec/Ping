@@ -31,25 +31,33 @@ class ClientThread(threading.Thread):
     finally:
       connection.close()
 
-  def handleData(data):
-    print('handles incomming data')
-
-  def ping(user,passwd,chk):
-    print('handles ping')
+  def handlePing(self,data):
+    parts=data.split(' ') if len(data.split(' '))==3 else self.handleBadSyntax()
+    if self.verifyUser(parts[1],parts[2]):
+      self.csocket.send('accepted'.encode('utf-8'))
+      self.updateAlive(parts[1])
     #add "it's dangerous" package for signature
 
-  def verifyUser(user,passwd):
-    print('verifies user in db')
+  def updateAlive(self):
+    print('updates user record in db')
+
+  def verifyUser(self,user,passwd):
+    print('verifies user %s with %s in db'%(user,passwd))
+    return True
     # db struct: user name, hashed pass, join time, lastPing, default extension time, new death date, tresholds with actions
     # maybe document oriented db
 
   def run(self):
     try:
       print ("Connection from : %s on port %s"%(self.ip,str(self.port)))
-      while True:
+      data='temp'
+      while True and len(data)>0:
         data = self.csocket.recv(2048)
-        print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
-        self.csocket.send(("You sent me : %s"%str(data)).encode('utf-8'))
+        if data.decode('utf-8').startswith('ping'):
+          self.handlePing(data.decode('utf-8'))
+        print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data.decode('utf-8')))
     finally:
       print("Client at %s disconnected..."%self.ip)
+      self.csocket.close()
+
 
