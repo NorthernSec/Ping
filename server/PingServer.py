@@ -16,7 +16,7 @@ sys.path.append(runPath)
 
 import socket
 
-from ClientThread import ClientThread
+from lib.ClientThread import ClientThread
 
 if __name__ == '__main__':
   # Start server
