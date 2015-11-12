@@ -45,6 +45,18 @@ def addUser(user):
   conn.close()
   return True
 
+def updatePing(user):
+  user.pi
+  conn=getConnection()
+  curs=conn.cursor()
+  cur.execute("""UPDATE Users SET lastPing=?, warnDate=?, deathDate=?
+                 WHERE email=?""", (user.lastPing, user.warnDate, user.deathDate,
+                                    user.email))
+  conn.commit()
+  conn.close()
+  return True
+  
+
 def getUser(email):
   u=selectAllFrom("Users", ["email='%s'"%email])
   if len(u)!=0:

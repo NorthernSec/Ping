@@ -15,6 +15,8 @@ sys.path.append(os.path.join(_runPath, ".."))
 import calendar
 import time
 
+from passlib.hash import pbkdf2_sha256
+
 from lib.Exceptions import InvalidVarType
 from lib.Configuration import Configuration as conf
 
@@ -49,9 +51,17 @@ class User():
       raise(InvalidVarType)
 
   def newUser(self):
-    self.joinTime=calendar.timegm(time.gmtime())
+    ping()
+    self.joinTime=self.lastPing
     self.defaultExtension=conf.getDefaultExtension()
     self.defaultWarnTime=conf.getDefaultWarnTime()
-    self.lastPing=self.joinTime
-    self.warnDate=self.lastPing+(self.defaultWarnTime*DAY_MULTIPLIER)
-    self.deathDate=self.lastPing+(self.defaultExtension*DAY_MULTIPLIER)
+
+  def ping(self):
+    self.lastPing=calendar.timegm(time.gmtime())
+    self.warnDate=now+(self.defaultWarnTime*DAY_MULTIPLIER)
+    self.deathDate=now+(self.defaultExtension*DAY_MULTIPLIER)
+    return now
+
+  def verifyPassword(self, pwd):
+    return pbkdf2_sha256.verify(pwd, self.password)
+
