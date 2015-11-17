@@ -51,16 +51,15 @@ class User():
       raise(InvalidVarType)
 
   def newUser(self):
-    ping()
-    self.joinTime=self.lastPing
     self.defaultExtension=conf.getDefaultExtension()
     self.defaultWarnTime=conf.getDefaultWarnTime()
+    self.ping()
+    self.joinTime=self.lastPing
 
   def ping(self):
     self.lastPing=calendar.timegm(time.gmtime())
-    self.warnDate=now+(self.defaultWarnTime*DAY_MULTIPLIER)
-    self.deathDate=now+(self.defaultExtension*DAY_MULTIPLIER)
-    return now
+    self.warnDate=self.lastPing+(self.defaultWarnTime*DAY_MULTIPLIER)
+    self.deathDate=self.lastPing+(self.defaultExtension*DAY_MULTIPLIER)
 
   def verifyPassword(self, pwd):
     return pbkdf2_sha256.verify(pwd, self.password)

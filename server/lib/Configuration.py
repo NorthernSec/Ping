@@ -17,7 +17,7 @@ import configparser
 class Configuration():
   ConfigParser = configparser.ConfigParser()
   ConfigParser.read(os.path.join(runPath, "../etc/configuration.ini"))
-  default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "../db.sqlite"}
+  default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite"}
 
   @classmethod
   def readSetting(cls, section, item, default):

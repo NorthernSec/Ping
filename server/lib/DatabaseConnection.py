@@ -29,6 +29,7 @@ def getConnection():
                   deathDate         INTEGER  NOT NULL );''')
   return conn
 
+# Adding data
 def addUser(user):
   if type(user)!=User: raise(InvalidVarType)
   if getUser(user.email): raise(UserAlreadyExists)
@@ -45,18 +46,30 @@ def addUser(user):
   conn.close()
   return True
 
+# Modifying data
 def updatePing(user):
-  user.pi
+  user.ping()
   conn=getConnection()
   curs=conn.cursor()
-  cur.execute("""UPDATE Users SET lastPing=?, warnDate=?, deathDate=?
-                 WHERE email=?""", (user.lastPing, user.warnDate, user.deathDate,
-                                    user.email))
+  curs.execute("""UPDATE Users SET lastPing=?, warnDate=?, deathDate=?
+                  WHERE email=?""", (user.lastPing, user.warnDate, user.deathDate,
+                                     user.email))
+  conn.commit()
+  conn.close()
+  return True
+
+def updateUser(user):
+  conn=getConnection()
+  curs=conn.cursor()
+  curs.execute("""UPDATE Users SET password=?, defaultExtension=?,
+                    defaultWarnTime=?
+                  WHERE email=?""", (user.password, user.defaultExtension,
+                                     user.defaultWarnTime, user.email))
   conn.commit()
   conn.close()
   return True
   
-
+# Querying data
 def getUser(email):
   u=selectAllFrom("Users", ["email='%s'"%email])
   if len(u)!=0:

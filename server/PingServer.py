@@ -23,9 +23,12 @@ if __name__ == '__main__':
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   addr = ('localhost', 10000)
   print('Starting Ping on %s port %s' % addr)
-  sock.bind(addr)
-  sock.listen(1)
-  while True:
-    (cl_sock, (cl_ip, cl_port)) = sock.accept()
-    thread=ClientThread(cl_ip, cl_port, cl_sock)
-    thread.start()
+  try:
+    sock.bind(addr)
+    sock.listen(1)
+    while True:
+      (cl_sock, (cl_ip, cl_port)) = sock.accept()
+      thread=ClientThread(cl_ip, cl_port, cl_sock)
+      thread.start()
+  finally:
+    sock.close()

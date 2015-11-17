@@ -62,7 +62,7 @@ if __name__ == '__main__':
     if len(a)>1:
       printResult('server port', Config.setPort(a[1]))
   elif args.set_user_name:
-    printResult('user-name', Config.setHost(args.set_user_name))
+    printResult('user-name', Config.setUser(args.set_user_name))
   elif args.set_user_pass:
     # encryption to be added
     printResult('user-pass', Config.setPass(args.set_user_pass))
