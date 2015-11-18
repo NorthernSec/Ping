@@ -15,7 +15,7 @@ from passlib.hash import pbkdf2_sha256
 
 import socket
 import argparse
-from Config import Config
+from Config import Config as conf
 
 description='''Connects and interacts with the Ping server. '''
 
@@ -35,8 +35,8 @@ def printResult(setting, outcome):
 
 def sendMessage(message):
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  host = Config.getHost() if Config.getHost() else sys.exit('[!] No hostname set!')
-  addr = (host, Config.getPort())
+  host = conf.getHost() if conf.getHost() else sys.exit('[!] No hostname set!')
+  addr = (host, conf.getPort())
   print ('Connecting to %s port %s' % addr)
   sock.connect(addr)
   try:
@@ -58,18 +58,19 @@ if __name__ == '__main__':
   # setting vars
   if args.set_server_address:
     a=args.set_server_address.split(':')
-    printResult('server host', Config.setHost(a[0]))
+    printResult('server host', conf.setHost(a[0]))
     if len(a)>1:
-      printResult('server port', Config.setPort(a[1]))
+      printResult('server port', conf.setPort(a[1]))
   elif args.set_user_name:
-    printResult('user-name', Config.setUser(args.set_user_name))
+    printResult('user-name', conf.setUser(args.set_user_name))
   elif args.set_user_pass:
     # encryption to be added
-    printResult('user-pass', Config.setPass(args.set_user_pass))
+    printResult('user-pass', conf.setPass(args.set_user_pass))
   # message types
   elif args.set_ping_ttl:
-    sendMessage('setTTL %s'%args.set_ping_ttl)
+    sendMessage('set\t%s\t%s\tdet\t%s'%(conf.getUser(),conf.getPass(),
+                                        args.set_ping_ttl))
   elif args.add_to_deathclock:
     sendMessage('extend %s'%args.add_to_deathclock)
   else:
-    sendMessage('ping %s %s'%(Config.getUser(),Config.getPass()))
+    sendMessage('ping\t%s\t%s'%(conf.getUser(),conf.getPass()))
