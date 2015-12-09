@@ -61,6 +61,12 @@ class User():
     self.warnDate=self.lastPing+(self.defaultWarnTime*DAY_MULTIPLIER)
     self.deathDate=self.lastPing+(self.defaultExtension*DAY_MULTIPLIER)
 
+  def extend(self, days):
+    self.lastPing=calendar.timegm(time.gmtime())
+    ratio = self.defaultWarnTime/self.defaultExtension
+    self.warnDate=self.lastPing+(ratio*days*DAY_MULTIPLIER)
+    self.deathDate=self.lastPing+(days*DAY_MULTIPLIER)    
+
   def verifyPassword(self, pwd):
     return pbkdf2_sha256.verify(pwd, self.password)
 

@@ -19,6 +19,9 @@ class ClientThread(threading.Thread):
     self.ip = ip
     self.port = port
     self.csocket = clientsocket
+    self.statusCode = {'invalidUser':'100',
+                       'pingOK':     '200',
+                       'settingSet': '210'}
     print("[+] New thread started for %s:%s"%(ip,str(port)))
 
   def reply(self, text):
@@ -45,6 +48,11 @@ class ClientThread(threading.Thread):
       elif parts[0] == 'set': #Format set <user> <pass> <setting> <value>
         if self.verifyVars(parts, 4):
           self.setSettings(parts[0], parts[1], parts[2], parts[3])
+      elif parts[0] == "extend": #Format extend <user> <pass> <days>
+        if self.verrifyVars(parts, 3):
+          self.extendTTL(parts[0], parts[1], parts[2])
+      else:
+        self.handleBadData('\t'.join(parts))
     except Exception as e:
       print("Exception occured while handling data: %s"%e)
       print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
@@ -58,9 +66,9 @@ class ClientThread(threading.Thread):
     if valid:
       db.updatePing(user)
       print("user %s is alive!"%user.email)
-      self.reply('accepted User updated')
+      self.reply(self.statusCode['pingOK'])
     else:
-      self.reply('rejected User does not exist')
+      self.reply(self.statusCode['invalidUser'])
 
   def setSettings(self, user, pwd, setting, value):
     user, valid = self.verifyUser(user,pwd)
@@ -71,9 +79,17 @@ class ClientThread(threading.Thread):
       else: self.handleBadData('\t'.join(['set', user, pwd, setting,
                                 value]))
       db.updateUser(user)
-      self.reply('accepted Setting has been set')
+      self.reply(self.statusCode['settingSet'])
     else:
-      self.reply('rejected User does not exist')
+      self.reply(self.statusCode['invalidUser'])
+
+  def extendTTL(self, user, pwd, days):
+    user, valid = self.verifyUser(user,pwd)
+    if valid:
+      user.extend(days)
+      db.extendTTL(user)
+    else:
+      self.reply(self.statusCode['invalidUser'])
 
   def verifyUser(self,user,passwd):
     u=db.getUser(user)

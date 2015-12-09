@@ -49,6 +49,9 @@ def addUser(user):
 # Modifying data
 def updatePing(user):
   user.ping()
+  extendTTL(user)
+
+def extendTTL(user):
   conn=getConnection()
   curs=conn.cursor()
   curs.execute("""UPDATE Users SET lastPing=?, warnDate=?, deathDate=?

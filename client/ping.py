@@ -23,8 +23,8 @@ parser = argparse.ArgumentParser(description=description)
 parser.add_argument('--set-server-address', metavar='address[:port]', type=str, help='Sets the Ping server address to connect to and writes it to the config file. Optionally you can specify a non-default port' )
 parser.add_argument('--set-user-name', metavar='username', type=str, help='Sets your username and writes it to the config file' )
 parser.add_argument('--set-user-pass', metavar='password', type=str, help='Sets your password and writes it to the config file' )
-parser.add_argument('--add-to-deathclock', metavar='days', type=int, help='Extends the death clock with set amount of days' )
-parser.add_argument('--set-ping-ttl', metavar='days', type=int, help='Sets the default life of a ping messageto the server' )
+parser.add_argument('--extend-ttl', metavar='days', type=int, help='Extends the death clock with set amount of days' )
+parser.add_argument('--set-def-ttl', metavar='days', type=int, help='Sets the default life of a ping messageto the server' )
 args = parser.parse_args()
 
 def printResult(setting, outcome):
@@ -67,10 +67,11 @@ if __name__ == '__main__':
     # encryption to be added
     printResult('user-pass', conf.setPass(args.set_user_pass))
   # message types
-  elif args.set_ping_ttl:
+  elif args.set_def_ttl:
     sendMessage('set\t%s\t%s\tdet\t%s'%(conf.getUser(),conf.getPass(),
                                         args.set_ping_ttl))
-  elif args.add_to_deathclock:
-    sendMessage('extend %s'%args.add_to_deathclock)
+  elif args.extend_ttl:
+    sendMessage('extend\t%s\t%s\t%s'%(conf.getUser(),conf.getPass(),
+                                        args.extend_ttl))
   else:
     sendMessage('ping\t%s\t%s'%(conf.getUser(),conf.getPass()))
