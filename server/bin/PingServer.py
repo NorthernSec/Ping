@@ -12,6 +12,8 @@
 import os
 import sys
 runPath = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(runPath, ".."))
+
 sys.path.append(runPath)
 
 import socket

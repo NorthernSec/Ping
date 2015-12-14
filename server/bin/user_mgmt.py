@@ -12,8 +12,6 @@ import sys
 runPath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(runPath, ".."))
 
-import pymongo
-
 import argparse
 import getpass
 from passlib.hash import pbkdf2_sha256
