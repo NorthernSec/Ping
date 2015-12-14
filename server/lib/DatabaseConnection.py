@@ -7,8 +7,10 @@
 # Copyright (c)	2015	Pieter-Jan Moreels
 
 # Imports
+import calendar
 import platform
 import sqlite3
+import time
 
 from lib.User import User
 from lib.Exceptions import InvalidVarType, UserAlreadyExists
@@ -27,6 +29,15 @@ def getConnection():
                   lastPing          INTEGER  NOT NULL,
                   warnDate          INTEGER  NOT NULL,
                   deathDate         INTEGER  NOT NULL );''')
+  conn.execute('''CREATE TABLE IF NOT EXISTS Actions
+                 (ID        INTEGER  PRIMARY KEY AUTOINCREMENT,
+                  userID    INTEGER  NOT NULL,
+                  action    TEXT     NOT NULL,
+                  target    TEXT     NOT NULL,
+                  username  TEXT             ,
+                  message   TEXT     NOT NULL,
+                  attempts  INTEGER  DEFAULT 0 );''')
+
   return conn
 
 # Adding data
@@ -44,6 +55,21 @@ def addUser(user):
                    'lp':user.lastPing, 'wd':user.warnDate, 'dd':user.deathDate})
   conn.commit()
   conn.close()
+  return True
+
+def addAction(user, action):
+  if type(user)!=User: raise(InvalidVarType)
+  if type(action)!=Action: raise(InvalidVarType)
+  # Check if action already exists
+  conn=getConnection()
+  curs=conn.cursor()
+  u = getUser(user.email)
+  a = action # purely to shorten the code below
+  curs.execute('''INSERT INTO Actions
+                  (userID, action, target, username, message)
+                  VALUES(:uid, :act, :targ, :uname, :mes)''',
+                  {'uid': u[0], 'act': a.action, 'targ':a.target,
+                   'uname': a.username, 'mes':a.message})
   return True
 
 # Modifying data
@@ -74,17 +100,26 @@ def updateUser(user):
   
 # Querying data
 def getUser(email):
-  u=selectAllFrom("Users", ["email='%s'"%email])
+  u=selectAllFrom("Users", "email='%s'"%email)
   if len(u)!=0:
     u=u[0]
-    return User(u["email"], u["password"], u["jointime"], u["defaultextension"],
-                u["defaultwarntime"], u["lastping"], u["warndate"], u["deathdate"])
+    return (u['id'], User(u["email"], u["password"], u["jointime"], u["defaultextension"],
+                          u["defaultwarntime"], u["lastping"], u["warndate"], u["deathdate"]))
   else:
     return None
+
+def getDeaths():
+  return selectAllFrom("Users", where="deathDate = -1")
+
+def getNewDeaths():
+  now=calendar.timegm(time.gmtime())
+  wh=["deathDate < %s"%now, "deathDate != -1"]
+  return selectAllFrom("User", where = wh)
 
 def selectAllFrom(table, where=None):
   conn=getConnection()
   curs=conn.cursor()
+  if type(where) is str: where = [where]
   wh="where "+" and ".join(where) if where else ""
   data=list(curs.execute("SELECT * FROM %s %s;"%(table,wh)))
   dataArray=[]
