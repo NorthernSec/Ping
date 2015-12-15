@@ -12,16 +12,18 @@ import platform
 import sqlite3
 import time
 
+from lib.Action import Action
 from lib.User import User
 from lib.Exceptions import InvalidVarType, UserAlreadyExists
 from lib.Configuration import Configuration as conf
+from lib.Toolkit import userFromDict, actionFromDict
 
 # Functions
 def getConnection():
   conn=sqlite3.connect(conf.getDatabase())
   conn.execute('''CREATE TABLE IF NOT EXISTS Users
                  (ID                INTEGER  PRIMARY KEY AUTOINCREMENT,
-                  email             TEXT     NOT NULL,
+                  email             TEXT     NOT NULL    UNIQUE,
                   password          TEXT     NOT NULL,
                   joinTime          INTEGER  NOT NULL,
                   defaultExtension  INTEGER  NOT NULL,
@@ -35,7 +37,7 @@ def getConnection():
                   action    TEXT     NOT NULL,
                   target    TEXT     NOT NULL,
                   username  TEXT             ,
-                  message   TEXT     NOT NULL,
+                  message   TEXT             ,
                   attempts  INTEGER  DEFAULT 0 );''')
 
   return conn
@@ -57,27 +59,30 @@ def addUser(user):
   conn.close()
   return True
 
-def addAction(user, action):
-  if type(user)!=User: raise(InvalidVarType)
+def addAction(action):
   if type(action)!=Action: raise(InvalidVarType)
   # Check if action already exists
   conn=getConnection()
   curs=conn.cursor()
-  u = getUser(user.email)
+  u = getUser(action.user.email)
   a = action # purely to shorten the code below
   curs.execute('''INSERT INTO Actions
                   (userID, action, target, username, message)
                   VALUES(:uid, :act, :targ, :uname, :mes)''',
                   {'uid': u[0], 'act': a.action, 'targ':a.target,
                    'uname': a.username, 'mes':a.message})
+  conn.commit()
+  conn.close()
   return True
 
 # Modifying data
 def updatePing(user):
+  if type(user)!=User: raise(InvalidVarType)
   user.ping()
   extendTTL(user)
 
 def extendTTL(user):
+  if type(user)!=User: raise(InvalidVarType)
   conn=getConnection()
   curs=conn.cursor()
   curs.execute("""UPDATE Users SET lastPing=?, warnDate=?, deathDate=?
@@ -97,24 +102,47 @@ def updateUser(user):
   conn.commit()
   conn.close()
   return True
+
+def markDead(user):
+  if type(user)!=User: raise(InvalidVarType)
+  conn=getConnection()
+  curs=conn.cursor()
+  curs.execute("""UPDATE Users SET deathDate=-1
+                  WHERE email=?""", (user.email,))
+  conn.commit()
+  conn.close()
   
 # Querying data
 def getUser(email):
   u=selectAllFrom("Users", "email='%s'"%email)
   if len(u)!=0:
     u=u[0]
-    return (u['id'], User(u["email"], u["password"], u["jointime"], u["defaultextension"],
-                          u["defaultwarntime"], u["lastping"], u["warndate"], u["deathdate"]))
+    return (u['id'], userFromDict(u))
   else:
-    return None
+    return (None, None)
+
+def getActions(user):
+  if type(user)!=User: raise(InvalidVarType)
+  id, user=getUser(user.email)
+  if not id: return None
+  actions=[]
+  for a in selectAllFrom("Actions", where="userID = %s"%id):
+    actions.append(actionFromDict(user, a))
+  return actions
 
 def getDeaths():
-  return selectAllFrom("Users", where="deathDate = -1")
+  users=[]
+  for u in selectAllFrom("Users", where="deathDate = -1"):
+    users.append(userFromDict(u))
+  return users
 
 def getNewDeaths():
+  users=[]
   now=calendar.timegm(time.gmtime())
   wh=["deathDate < %s"%now, "deathDate != -1"]
-  return selectAllFrom("User", where = wh)
+  for u in selectAllFrom("Users", where = wh):
+    users.append(userFromDict(u))
+  return users
 
 def selectAllFrom(table, where=None):
   conn=getConnection()

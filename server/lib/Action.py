@@ -17,6 +17,7 @@ import time
 
 from passlib.hash import pbkdf2_sha256
 
+from lib.User import User
 from lib.Exceptions import InvalidVarType
 from lib.Configuration import Configuration as conf
 
