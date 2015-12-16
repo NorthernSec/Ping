@@ -17,7 +17,9 @@ import configparser
 class Configuration():
   ConfigParser = configparser.ConfigParser()
   ConfigParser.read(os.path.join(runPath, "../etc/configuration.ini"))
-  default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite"}
+  default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
+             'jid': "", 'jpass': "", 'jmessage':"Message from the Death Clock:\n %user% probably has passed away",
+             'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away"}
 
   @classmethod
   def readSetting(cls, section, item, default):
@@ -43,4 +45,20 @@ class Configuration():
   @classmethod
   def getDatabase(cls):
     return os.path.join(runPath, "..", cls.readSetting("Database", "path", cls.default['dbPath']))
-
+ 
+  # Actions
+  @classmethod
+  def getXMPPCredentials(cls):
+    jid=cls.readSetting("XMPP", "id", cls.default['jid'])
+    jpass=cls.readSetting("XMPP", "pass", cls.default['jpass'])
+    return (jid, jpass) if jid and jpass else (None, None)
+  @classmethod
+  def getXMPPDefaultMessage(cls):
+    return cls.readSetting("XMPP", "message", cls.default['jmessage'])
+  @classmethod
+  def getIRCcredentials(cls):
+    return cls.readSetting("IRC", "username", cls.default['irc'])
+  @classmethod
+  def getIRCDefaultMessage(cls):
+    return cls.readSetting("IRC", "message", cls.default['ircmessage'])
+  
