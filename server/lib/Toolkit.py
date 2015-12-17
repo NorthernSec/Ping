@@ -21,6 +21,6 @@ def userFromDict(u):
 def actionFromDict(user, a):
   try:
     return Action(user, a["action"], a["target"], a["username"],
-                  a["message"])
+                  a["message"], a['attempts'], a['id'])
   except:
     return None

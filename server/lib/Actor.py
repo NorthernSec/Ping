@@ -21,60 +21,60 @@ from lib.Configuration import Configuration as conf
 from lib.Exceptions import InvalidVarType
 
 class Actor():
-  def __init__():
-    self.queue={'xmpp':[],
-                'irc': {},
-                'mail':[]}
+  def __init__(self):
+    self._queue={'xmpp':[],
+                 'irc': {},
+                 'mail':[]}
 
-  def queue(actions):
+  def queue(self, actions):
     if type(actions) is not list: actions=[actions]
     if not all(isinstance(x,Action) for x in actions): raise(InvalidVarType)
     for act in actions:
       if   act.action == "xmpp":
-        self.queue['xmpp'].append(act)
+        self._queue['xmpp'].append(act)
       elif act.action == "irc":
         server=act.target.split(",")
-        if server in self.queue['irc'].keys():
-          self.queue['irc'][server].append(act)
+        if server in self._queue['irc'].keys():
+          self._queue['irc'][server].append(act)
         else:
-          self.queue['irc'][server] = [act]
+          self._queue['irc'][server] = [act]
       elif act.action == "mail":
-        self.queue['mail'].append(act)
+        self._queue['mail'].append(act)
 
-  def actOnQueue():
+  def actOnQueue(self):
     closureQueue = []
     failedQueue = []
     # empty XMPP queue
-    if len(self.queue['xmpp']) != 0:
+    if len(self._queue['xmpp']) != 0:
       jid, jpass = conf.getXMPPCredentials()
       if jid:
         xmpp = XMPPBot(jid, jpass)
         if xmpp.connect():
           xmpp.process()
-          for act in self.queue['xmpp']:
+          for act in self._queue['xmpp']:
             if xmpp.act(act):
               closureQueue.append(act)
             else:
               failedQueue.append(act)
-            self.queue['xmpp'].pop(act)
+            self._queue['xmpp'].pop(act)
     # empty IRC queue
     nick=conf.getIRCcredentials()
-    for server in self.queue['irc'].keys():
+    for server in self._queue['irc'].keys():
       split=server.split(":")
       if len(split) == 2: server, port = split
       else:               server, port = [server, 6667]
       bot=IRCBot(nick, server, port)
       bot.start()
-      for act in self.queue['irc'][server]:
+      for act in self._queue['irc'][server]:
         if bot.act(act):
           closureQueue.append(act)
         else:
           failedQueue.append(act)
       bot.die()
-      self.queue['irc'].pop(server)
+      self._queue['irc'].pop(server)
     # empty mail queue
     # TODO
-
+    return (closureQueue, failedQueue)
 
 class XMPPBot(sleekxmpp.ClientXMPP):
   def __init__(self, jid, password):

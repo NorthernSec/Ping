@@ -111,7 +111,30 @@ def markDead(user):
                   WHERE email=?""", (user.email,))
   conn.commit()
   conn.close()
-  
+  return True
+
+def markFailed(action):
+  if type(actions)!=Action: raise(InvalidVarType)
+  if not action.id: return False
+  conn=getConnection()
+  curs=conn.cursor()
+  curs.execute("""UPDATE ACTIONS SET attempts=?
+                  WHERE id=?""", (action.attempts+1, actions.id))
+  conn.commit()
+  conn.close()
+  return True
+
+def markCompleted(action):
+  if type(actions)!=Action: raise(InvalidVarType)
+  if not action.id: return False
+  conn=getConnection()
+  curs=conn.cursor()
+  curs.execute("""UPDATE ACTIONS SET attempts=-1
+                  WHERE id=?""", (actions.id,))
+  conn.commit()
+  conn.close()
+  return True
+
 # Querying data
 def getUser(email):
   u=selectAllFrom("Users", "email='%s'"%email)
@@ -128,6 +151,13 @@ def getActions(user):
   actions=[]
   for a in selectAllFrom("Actions", where="userID = %s"%id):
     actions.append(actionFromDict(user, a))
+  return actions
+
+def getActionsToDo():
+  actions=[]
+  wh=["attempts > 0", "attempts < %s"%conf.getMaxAttempts()]
+  for a in selectAllFrom("Actions", where=wh):
+    actions.append(actionFromDict(a))
   return actions
 
 def getDeaths():

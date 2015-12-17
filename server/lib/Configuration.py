@@ -18,6 +18,7 @@ class Configuration():
   ConfigParser = configparser.ConfigParser()
   ConfigParser.read(os.path.join(runPath, "../etc/configuration.ini"))
   default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
+             'maxAttempts': 5,
              'jid': "", 'jpass': "", 'jmessage':"Message from the Death Clock:\n %user% probably has passed away",
              'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away"}
 
@@ -61,4 +62,7 @@ class Configuration():
   @classmethod
   def getIRCDefaultMessage(cls):
     return cls.readSetting("IRC", "message", cls.default['ircmessage'])
+  @classmethod
+  def getMaxAttempts(cls):
+    return cls.readSetting("Actions", "max attempts", cls.default['maxAttempts'])
   

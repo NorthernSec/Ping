@@ -4,33 +4,19 @@ runPath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(runPath, ".."))
 
 import lib.DatabaseConnection as db
-
-MESSAGE="Deathclock message: %s has probably passed away."
+from lib.Actor import Actor
 
 if __name__ == '__main__':
-  # For x in db.getActionsToDo(): (== with attempts > 0)
-    # Execute action
-    # If success => set to -1
-    # If fail, increment with 1
-
+  actor = Actor()
+  # Actions of dead users that failed before
+  actor.queue(db.getActionsToDo())
+  # New dead users
   for user in db.getNewDeaths():
     db.markDead(user)
-    for a in db.getActions(user):
-      uname=a.username if a.username else user.email
-      message = MESSAGE%uname
-      if a.message:
-        message+="\nPersonal message: %s"%a.message
+    actions=db.getActions(user)
+    actor.queue(actions)
 
-      if a.action=="irc":
-        print("will connect to irc and send the following message:")
-        print(message)
-      elif a.action=="xmpp":
-        print("will connect to xmpp and send the follwing message:")
-        print(message)
-      elif a.action=="mail":
-        print("will send an email with the follwing message:")
-        print(message)
-    # Execute actions for user
-      # If success, set to -1, else, increment with 1
-
-	
+  # Update actions
+  close,failed = actor.actOnQueue() 
+  for act in close: db.markCompleted(act)
+  for act in failed: db.markFailed(act)
