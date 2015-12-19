@@ -12,6 +12,8 @@ import socket
 import threading
 
 import lib.DatabaseConnection as db
+from lib.Action import Action
+from lib.Exceptions import *
 
 class ClientThread(threading.Thread):
   def __init__(self,ip,port,clientsocket):
@@ -19,9 +21,13 @@ class ClientThread(threading.Thread):
     self.ip = ip
     self.port = port
     self.csocket = clientsocket
-    self.statusCode = {'invalidUser':'100',
-                       'pingOK':     '200',
-                       'settingSet': '210'}
+    self.statusCode = {'invalidUser':         '100',
+                       'pingOK':              '200',
+                       'settingSet':          '210',
+                       'extensionSet':        '220',
+                       'actionAdded':         '230',
+                       'tooManyActions':      '431',
+                       'actionAlreadyExists': '432'}
     print("[+] New thread started for %s:%s"%(ip,str(port)))
 
   def reply(self, text):
@@ -40,26 +46,30 @@ class ClientThread(threading.Thread):
 
   def handleData(self,data):
     try:
+      if not data: return
       data=data if type(data) is str else data.decode('utf-8')
-      parts = data.split('\t')
-      if parts[0] == 'ping': #Format: ping <user> <pass>
-        if self.verifyVars(parts, 2):
-          self.ping(parts[0], parts[1])
-      elif parts[0] == 'set': #Format set <user> <pass> <setting> <value>
-        if self.verifyVars(parts, 4):
-          self.setSettings(parts[0], parts[1], parts[2], parts[3])
-      elif parts[0] == "extend": #Format extend <user> <pass> <days>
-        if self.verrifyVars(parts, 3):
-          self.extendTTL(parts[0], parts[1], parts[2])
+      p=data.split('\t')
+      if p[0] == 'ping': #Format: ping <user> <pass>
+        if self.verifyVars(p, 2):
+          self.ping(p[0], p[1])
+      elif p[0] == 'set': #Format set <user> <pass> <setting> <value>
+        if self.verifyVars(p, 4):
+          self.setSettings(p[0], p[1], p[2], p[3])
+      elif p[0] == "extend": #Format extend <user> <pass> <days>
+        if self.verrifyVars(p, 3):
+          self.extendTTL(p[0], p[1], p[2])
+      elif p[0] == "add-action": #Format add-action <user> <pass> <action> <target> <username> <message>
+        if self.verifyVars(p, 6):
+          self.addAction(p[0], p[1], p[2], p[3], p[4], p[5])
       else:
-        self.handleBadData('\t'.join(parts))
+        self.handleBadData('\t'.join(p))
     except Exception as e:
       print("Exception occured while handling data: %s"%e)
       print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
     #add "it's dangerous" package for signature
 
   def handleBadData(self, data):
-    print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data.decode('utf-8')))
+    print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
 
   def ping(self, user, pwd):
     user, valid = self.verifyUser(user,pwd)
@@ -88,12 +98,29 @@ class ClientThread(threading.Thread):
     if valid:
       user.extend(days)
       db.extendTTL(user)
+      self.reply(self.statusCode['extensionSet'])
+    else:
+      self.reply(self.statusCode['invalidUser'])
+
+  def addAction(self, user, pwd, act, target, name, message):
+    user, valid = self.verifyUser(user,pwd)
+    if valid:
+      name   =name    if name    else None
+      message=message if message else None
+      action=Action(user, act, target, name, message)
+      try:
+        db.addAction(action)
+        self.reply(self.statusCode['actionAdded'])
+      except TooManyActions:
+        self.reply(self.statusCode['tooManyActions'])
+      except ActionAlreadyExists:
+        self.reply(self.statusCode['actionAlreadyExists'])
     else:
       self.reply(self.statusCode['invalidUser'])
 
   def verifyUser(self,user,passwd):
     u=db.getUser(user)
-    return (u, u.verifyPassword(passwd)) if u else (None, False)
+    return (u[1], u[1].verifyPassword(passwd)) if u[0] else (None, False)
 
   def run(self):
     try:

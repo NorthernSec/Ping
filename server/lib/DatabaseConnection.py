@@ -14,7 +14,7 @@ import time
 
 from lib.Action import Action
 from lib.User import User
-from lib.Exceptions import InvalidVarType, UserAlreadyExists
+from lib.Exceptions import *
 from lib.Configuration import Configuration as conf
 from lib.Toolkit import userFromDict, actionFromDict
 
@@ -61,10 +61,14 @@ def addUser(user):
 
 def addAction(action):
   if type(action)!=Action: raise(InvalidVarType)
-  # Check if action already exists
+  current=getActions(action.user)
+  if len(current)>=conf.getMaxActions(): raise(TooManyActions)
+  if True in [action.isSimilar(x) for x in current]:
+   raise(ActionAlreadyExists)
   conn=getConnection()
   curs=conn.cursor()
   u = getUser(action.user.email)
+  if not u[0]: raise(UserDoesNotExist())
   a = action # purely to shorten the code below
   curs.execute('''INSERT INTO Actions
                   (userID, action, target, username, message)

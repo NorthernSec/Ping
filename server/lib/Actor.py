@@ -33,7 +33,7 @@ class Actor():
       if   act.action == "xmpp":
         self._queue['xmpp'].append(act)
       elif act.action == "irc":
-        server=act.target.split(",")
+        server=act.target.split(",")[0]
         if server in self._queue['irc'].keys():
           self._queue['irc'][server].append(act)
         else:

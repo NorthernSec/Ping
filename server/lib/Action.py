@@ -41,3 +41,8 @@ class Action():
     (type(at) is not int) or
     (type(id) is not int and id is not None)): raise(InvalidVarType)
 
+  def isSimilar(self, action):
+    if (action.user.email == self.user.email and
+        action.action     == self.action and
+        action.target     == self.target): return True
+    return False
