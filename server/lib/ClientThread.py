@@ -21,13 +21,23 @@ class ClientThread(threading.Thread):
     self.ip = ip
     self.port = port
     self.csocket = clientsocket
-    self.statusCode = {'invalidUser':         '100',
-                       'pingOK':              '200',
-                       'settingSet':          '210',
-                       'extensionSet':        '220',
-                       'actionAdded':         '230',
-                       'tooManyActions':      '431',
-                       'actionAlreadyExists': '432'}
+    self.statusCode = {
+      # 100 range: failed user commands
+      'invalidUser':         '100',
+      'markedDead':          '110',
+      # 200 range: success
+      'pingOK':              '200',
+      'settingSet':          '210',
+      'extensionSet':        '220',
+      'actionAdded':         '230',
+      # 300 range: bad input
+      'unknownSetting':      '310',
+      'invalidAction':       '321',
+      'invalidTarget':       '322',
+      # 400 range: action refused
+      'tooManyActions':      '431',
+      'actionAlreadyExists': '432'}
+
     print("[+] New thread started for %s:%s"%(ip,str(port)))
 
   def reply(self, text):
@@ -74,9 +84,11 @@ class ClientThread(threading.Thread):
   def ping(self, user, pwd):
     user, valid = self.verifyUser(user,pwd)
     if valid:
-      db.updatePing(user)
-      print("user %s is alive!"%user.email)
-      self.reply(self.statusCode['pingOK'])
+      if user.deathDate == -1: # user is marked dead
+        self.reply(self.statusCode['markedDead'])
+      else:
+        db.updatePing(user)
+        self.reply(self.statusCode['pingOK'])
     else:
       self.reply(self.statusCode['invalidUser'])
 
@@ -86,8 +98,9 @@ class ClientThread(threading.Thread):
       if setting   == 'pwd':user.password = value
       elif setting == 'det':user.defaultExtension = value
       elif setting == 'dwt':user.defaultWarnTime = value
-      else: self.handleBadData('\t'.join(['set', user, pwd, setting,
-                                value]))
+      else: 
+        self.handleBadData('\t'.join(['set', user, pwd, setting, value]))
+        self.reply(self.statusCode['unknownSetting'])
       db.updateUser(user)
       self.reply(self.statusCode['settingSet'])
     else:
@@ -107,14 +120,19 @@ class ClientThread(threading.Thread):
     if valid:
       name   =name    if name    else None
       message=message if message else None
-      action=Action(user, act, target, name, message)
       try:
+        action=Action(user, act, target, name, message)
         db.addAction(action)
         self.reply(self.statusCode['actionAdded'])
       except TooManyActions:
         self.reply(self.statusCode['tooManyActions'])
       except ActionAlreadyExists:
         self.reply(self.statusCode['actionAlreadyExists'])
+      except InvalidAction:
+        self.reply(self.statusCode['invalidAction'])
+      except InvalidTarget:
+        self.reply(self.statusCode['invalidTarget'])
+
     else:
       self.reply(self.statusCode['invalidUser'])
 

@@ -29,13 +29,22 @@ parser.add_argument('--add-action', action='store_true', help='Add an action to 
 parser.add_argument('-v', action='store_true', help='Verbose')
 args = parser.parse_args()
 
-MESSAGES={'100': "Invalid user or password",
-          '200': "Successfully pinged",
-          '210': "Successfully set setting",
-          '220': "Successfully extended TTL",
-          '230': "Successfully added action",
-          '431': "You already have too many actions",
-          '432': "This action already exists"}
+MESSAGES={
+  # 100 range: failed user commands
+  '100': "Invalid user or password",
+  '110': "This user has already been marked as dead",
+  # 200 range: success 
+  '200': "Successfully pinged",
+  '210': "Successfully set setting",
+  '220': "Successfully extended TTL",
+  '230': "Successfully added action",
+  # 300 range: bad input
+  '310': "The server does not know this setting",
+  '321': "The server does not support this channel",
+  '322': "The target format is incorrect",
+  # 400 range: action refused
+  '431': "You already have too many actions",
+  '432': "This action already exists"}
 UNKNOWN_SERVER_RESPONSE="Got an unknown server response"
 
 def _log(line, force=False):
