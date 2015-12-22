@@ -75,25 +75,20 @@ class ClientThread(threading.Thread):
         self.handleBadData('\t'.join(p))
     except Exception as e:
       print("Exception occured while handling data: %s"%e)
-      print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
+      self.handleBadData(data)
     #add "it's dangerous" package for signature
 
   def handleBadData(self, data):
     print("Client(%s:%s) sent : %s"%(self.ip, str(self.port), data))
 
   def ping(self, user, pwd):
-    user, valid = self.verifyUser(user,pwd)
+    valid, user = self.isValidUser(user, pwd)
     if valid:
-      if user.deathDate == -1: # user is marked dead
-        self.reply(self.statusCode['markedDead'])
-      else:
-        db.updatePing(user)
-        self.reply(self.statusCode['pingOK'])
-    else:
-      self.reply(self.statusCode['invalidUser'])
+      db.updatePing(user)
+      self.reply(self.statusCode['pingOK'])
 
   def setSettings(self, user, pwd, setting, value):
-    user, valid = self.verifyUser(user,pwd)
+    user, valid = self.isValidUser(user,pwd)
     if valid:
       if setting   == 'pwd':user.password = value
       elif setting == 'det':user.defaultExtension = value
@@ -103,20 +98,16 @@ class ClientThread(threading.Thread):
         self.reply(self.statusCode['unknownSetting'])
       db.updateUser(user)
       self.reply(self.statusCode['settingSet'])
-    else:
-      self.reply(self.statusCode['invalidUser'])
 
   def extendTTL(self, user, pwd, days):
-    user, valid = self.verifyUser(user,pwd)
+    user, valid = self.isValidUser(user,pwd)
     if valid:
       user.extend(days)
       db.extendTTL(user)
       self.reply(self.statusCode['extensionSet'])
-    else:
-      self.reply(self.statusCode['invalidUser'])
 
   def addAction(self, user, pwd, act, target, name, message):
-    user, valid = self.verifyUser(user,pwd)
+    user, valid = self.isValidUser(user,pwd)
     if valid:
       name   =name    if name    else None
       message=message if message else None
@@ -133,12 +124,17 @@ class ClientThread(threading.Thread):
       except InvalidTarget:
         self.reply(self.statusCode['invalidTarget'])
 
-    else:
-      self.reply(self.statusCode['invalidUser'])
-
   def verifyUser(self,user,passwd):
     u=db.getUser(user)
     return (u[1], u[1].verifyPassword(passwd)) if u[0] else (None, False)
+
+  def isValidUser(self, user, passwd):
+    u, valid = self.verifyUser(user, passwd)
+    if not valid:
+      self.reply(self.statusCode['invalidUser']); return (False, u)
+    if not u or u.deathDate == -1  :
+      self.reply(self.statusCode['markedDead']);  return (False, u)
+    return (True, u)
 
   def run(self):
     try:
