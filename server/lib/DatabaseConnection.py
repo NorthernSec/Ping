@@ -140,6 +140,12 @@ def markCompleted(action):
   return True
 
 # Querying data
+def getUsers():
+  users=[]
+  for user in selectAllFrom("Users"):
+    users.append(userFromDict(user))
+  return users
+
 def getUser(email):
   u=selectAllFrom("Users", "email='%s'"%email)
   if len(u)!=0:

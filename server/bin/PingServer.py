@@ -21,11 +21,12 @@ sys.path.append(runPath)
 import socket
 
 from lib.ClientThread import ClientThread
+from lib.Configuration import Configuration as conf
 
 if __name__ == '__main__':
   # Start server
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  addr = ('localhost', 10000)
+  addr = conf.getPingAddress()
   print('Starting Ping on %s port %s' % addr)
   try:
     sock.bind(addr)

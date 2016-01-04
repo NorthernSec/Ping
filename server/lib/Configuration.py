@@ -20,7 +20,10 @@ class Configuration():
   default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
              'maxAttempts': 5, 'maxActions':5,
              'jid': "", 'jpass': "", 'jmessage':"Message from the Death Clock:\n %user% probably has passed away",
-             'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away"}
+             'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away",
+             'pingHost':  "127.0.0.1",                 'pingPort':  10000,               'pingDebug':  True,
+             'flaskHost': "127.0.0.1",                 'flaskPort': 5060,                'flaskDebug': True,
+             'sslCertificate': "./ssl/cve-search.crt", 'sslKey': "./ssl/cve-search.crt", 'ssl': False}
 
   @classmethod
   def readSetting(cls, section, item, default):
@@ -68,4 +71,31 @@ class Configuration():
   @classmethod
   def getMaxActions(cls):
     return cls.readSetting("Actions", "max actions", cls.default['maxActions'])
-
+  # Ping server
+  @classmethod
+  def getPingAddress(cls):
+    host = cls.readSetting("Pingserver", "Host", cls.default['pingHost'])
+    port = cls.readSetting("Pingserver", "Port", cls.default['pingPort'])
+    return (host, port)
+  @classmethod
+  def getPingDebug(cls):
+    return cls.readSetting("Pingserver", "Debug", cls.default['pingDebug'])
+  # Flask
+  @classmethod
+  def getWebAddress(cls):
+    host = cls.readSetting("Webserver", "Host", cls.default['flaskHost'])
+    port = cls.readSetting("Webserver", "Port", cls.default['flaskPort'])
+    return (host, port)
+  @classmethod
+  def getWebDebug(cls):
+    return cls.readSetting("Webserver", "Debug", cls.default['flaskDebug'])
+  # SSL
+  @classmethod
+  def useSSL(cls):
+    return cls.readSetting("Webserver", "SSL", cls.default['ssl'])
+  @classmethod
+  def getSSLCert(cls):
+    return os.path.join(runPath, "..", cls.readSetting("Webserver", "Certificate", cls.default['sslCertificate']))
+  @classmethod
+  def getSSLKey(cls):
+    return os.path.join(runPath, "..", cls.readSetting("Webserver", "Key", cls.default['sslKey']))
