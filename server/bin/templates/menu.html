@@ -1,0 +1,21 @@
+<!-- Nav -->
+<div class="navbar navbar-default">
+  <div class="navbar-header">
+    <a class="navbar-brand" href="/">NorthernSec Ping</a>
+  </div>
+  <div class="container">
+    <ul class="nav navbar-nav">
+      <li><a href="/">Home</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      {% if current_user.is_authenticated() %}
+        <li><a class="navbar-nav pull-right" href="/profile">My Profile</a></li>
+        <li><a class="navbar-nav pull-right" href="/logout"><span class="glyphicon glyphicon-log-out"></span></a></li>
+      {% else %}
+        <li><a class="navbar-nav pull-right" href="/login"> Log In </a> <span class="navbar-nav pull-right">or</span> 
+            <a class="navbar-nav pull-right" href="/signup">Sign up</a></li>
+      {% endif %}
+      </ul>
+  </div>
+</div>
+<!-- End Nav -->

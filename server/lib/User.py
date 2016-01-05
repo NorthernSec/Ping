@@ -51,6 +51,7 @@ class User():
       raise(InvalidVarType)
 
   def newUser(self):
+    self.setPassword(self.password)
     self.defaultExtension=conf.getDefaultExtension()
     self.defaultWarnTime=conf.getDefaultWarnTime()
     self.ping()
@@ -66,6 +67,12 @@ class User():
     ratio = self.defaultWarnTime/self.defaultExtension
     self.warnDate=self.lastPing+(ratio*days*DAY_MULTIPLIER)
     self.deathDate=self.lastPing+(days*DAY_MULTIPLIER)    
+
+  def setPassword(self, pwd):
+    salt=  conf.getSaltLength()
+    rounds=conf.getHashRounds()
+    print(salt)
+    self.password=pbkdf2_sha256.encrypt(pwd, rounds=rounds, salt_size=salt)
 
   def verifyPassword(self, pwd):
     return pbkdf2_sha256.verify(pwd, self.password)

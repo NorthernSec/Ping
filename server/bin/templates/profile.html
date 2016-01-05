@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Profile - Death Clock</title>
+  <!-- defaults -->
+  {% include 'defaultHead.html' %}
+  <!-- Custom CSS-->
+  <link href="/static/css/custom/profile.css" rel="stylesheet" />
+  <!-- Custom JavaScript-->
+  <script type="text/javascript" src="/static/js/custom/profile.js"></script>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- Nav -->
+        {% include 'menu.html' %}
+        <!-- End Nav -->
+        <!-- Content -->
+        <div>
+          <!-- Status -->
+          <div id="status"> </div>
+          <!-- Profile info -->
+          <table class="table table-striped table-hover table-bordered profile-info">
+            <tr><td>E-mail:                         </td><td>{{user.user.email}}                                         </td></tr>
+            <tr><td>Joined:                         </td><td>{{user.user.joinTime|fromUTC}}                              </td></tr>
+            <tr><td>Ping reminder:                  </td><td>as of {{user.user.warnDate|fromUTC}}                        </td></tr>
+            <tr><td>Marked dead:                    </td><td>as of {{user.user.deathDate|fromUTC}}                       </td></tr>
+            <tr><td>Warn me when inactive for:      </td><td><span id="warn">{{user.user.defaultWarnTime}}</span> day(s) </td></tr>
+            <tr><td>Mark me dead when inactive for: </td><td><span id="dead">{{user.user.defaultExtension}}</span> day(s)</td></tr>
+          </table>
+
+          <!-- Password stuff -->
+          <table class="table table-striped table-hover table-bordered profile-info">
+            <tr><td>Current password:    </td><td><input id="passwd"        type="password"></input></td></tr>
+            <tr><td>New password:        </td><td><input id="new_passwd"    type="password"></input></td></tr>
+            <tr><td>Repeat new password: </td><td><input id="repeat_passwd" type="password"></input></td></tr>
+            <tr><td colspan=2> <button id="change_pass">Change password</button> </td><tr>
+          </table>
+        </div>
+        <!-- end content -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>

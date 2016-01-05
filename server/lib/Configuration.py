@@ -19,6 +19,7 @@ class Configuration():
   ConfigParser.read(os.path.join(runPath, "../etc/configuration.ini"))
   default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
              'maxAttempts': 5, 'maxActions':5,
+             'saltLength': 10, 'hashRounds': 8000,
              'jid': "", 'jpass': "", 'jmessage':"Message from the Death Clock:\n %user% probably has passed away",
              'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away",
              'pingHost':  "127.0.0.1",                 'pingPort':  10000,               'pingDebug':  True,
@@ -42,13 +43,20 @@ class Configuration():
   # Users
   @classmethod
   def getDefaultWarnTime(cls):
-    return cls.readSetting("User", "defaultWarnTime", cls.default['defWarnTime'])
+    return cls.readSetting("User", "default warn time", cls.default['defWarnTime'])
   @classmethod
   def getDefaultExtension(cls):
-    return cls.readSetting("User", "defaultExtension", cls.default['defExtension'])
+    return cls.readSetting("User", "default extension", cls.default['defExtension'])
   @classmethod
   def getDatabase(cls):
     return os.path.join(runPath, "..", cls.readSetting("Database", "path", cls.default['dbPath']))
+  @classmethod
+  def getSaltLength(cls):
+    return cls.readSetting("User", "salt length", cls.default['saltLength'])
+  @classmethod
+  def getHashRounds(cls):
+    return cls.readSetting("User", "hashing rounds", cls.default['hashRounds'])
+
  
   # Actions
   @classmethod
