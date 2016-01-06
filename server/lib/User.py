@@ -17,7 +17,7 @@ import time
 
 from passlib.hash import pbkdf2_sha256
 
-from lib.Exceptions import InvalidVarType
+from lib.Exceptions import InvalidVarType, UserIsDead
 from lib.Configuration import Configuration as conf
 
 # Constants
@@ -58,6 +58,7 @@ class User():
     self.joinTime=self.lastPing
 
   def ping(self):
+    if self.deathDate == -1: raise(UserIsDead)
     self.lastPing=calendar.timegm(time.gmtime())
     self.warnDate=self.lastPing+(self.defaultWarnTime*DAY_MULTIPLIER)
     self.deathDate=self.lastPing+(self.defaultExtension*DAY_MULTIPLIER)

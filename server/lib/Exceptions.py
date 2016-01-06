@@ -5,3 +5,4 @@ class InvalidVarType(Exception):      pass
 class TooManyActions(Exception):      pass
 class UserAlreadyExists(Exception):   pass
 class UserDoesNotExist(Exception):    pass
+class UserIsDead(Exception):          pass

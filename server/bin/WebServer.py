@@ -26,6 +26,7 @@ import signal
 import time
 
 from lib.Configuration import Configuration as conf
+from lib.Exceptions import UserIsDead
 from lib.Users import User
 
 import lib.DatabaseConnection as db
@@ -43,34 +44,28 @@ def load_user(id):
     return User.get(id)
 
 # pages
-@app.route('/')
+@app.route('/', methods=['get'])
 def index():
   return render_template('index.html')
-
-
-@app.route('/login', methods=['get'])
-def login():
-  if not current_user.is_authenticated():
-    return render_template('login.html', status=["default", "none"])
-  else:
-    return redirect("/")
 
 @app.route('/profile', methods=['get'])
 @login_required
 def profile():
   return render_template('profile.html', user=current_user)
 
-@app.route('/login', methods=['post'])
-def validate_login():
-  # validate username and password
-  username = request.form.get('username')
-  password = request.form.get('password')
-  person = User.get(username)
-  if person and person.user.verifyPassword(password):
-    login_user(person)
-    return redirect('/profile')
+@app.route('/login', methods=['get'])
+def login():
+  if not current_user.is_authenticated():
+    return render_template('login.html', status=["default", "none"])
   else:
-    return render_template('login.html', status=["wrong_combination", "warning"])
+    return redirect("/profile")
+
+@app.route('/signup', methods=['get'])
+def signUp():
+  if not current_user.is_authenticated():
+    return render_template('signup.html', status=["default", "none"])
+  else:
+    return redirect("/profile")
 
 @app.route('/logout')
 @login_required
@@ -79,6 +74,22 @@ def logout():
   return redirect("/")
 
 # ajax
+@app.route('/_login')
+def validate_login():
+  username = request.args.get('username')
+  password = request.args.get('password')
+  person = User.get(username)
+  try:
+    if person and person.user.verifyPassword(password):
+      login_user(person)
+      person.user.ping() #If a user can log in, he's alive
+      db.updateUser(person.user)
+      return jsonify({"status": "success"})
+    else:
+      return jsonify({"status": "no match"})
+  except UserIsDead:
+    return jsonify({"status": "user dead"})
+
 @app.route('/_change_pass')
 def change_pass():
   old=items=request.args.get('password',        type=str)

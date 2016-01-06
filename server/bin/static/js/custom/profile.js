@@ -27,6 +27,3 @@ $(document).ready(function(){
     }
   });
 })
-
-function changePass(){
-}
