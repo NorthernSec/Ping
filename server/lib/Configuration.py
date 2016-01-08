@@ -20,8 +20,10 @@ class Configuration():
   default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
              'maxAttempts': 5, 'maxActions':5,
              'saltLength': 10, 'hashRounds': 8000,
-             'jid': "", 'jpass': "", 'jmessage':"Message from the Death Clock:\n %user% probably has passed away",
-             'irc': "DeathClock", 'ircmessage':"Message from the Death Clock: %user% probably has passed away",
+             'jid': "", 'jpass': "", 'jmessage':"./messages/xmpp.msg",
+             'irc': "DeathClock",  'ircmessage':"./messages/irc.msg",
+             'mail': "", 'mailpass': "", 'mailmessage': "./messages/mail.msg",
+             'mailserver': "", 'mailport': 587,
              'pingHost':  "127.0.0.1",                 'pingPort':  10000,               'pingDebug':  True,
              'flaskHost': "127.0.0.1",                 'flaskPort': 5060,                'flaskDebug': True,
              'sslCertificate': "./ssl/cve-search.crt", 'sslKey': "./ssl/cve-search.crt", 'ssl': False}
@@ -65,14 +67,39 @@ class Configuration():
     jpass=cls.readSetting("XMPP", "pass", cls.default['jpass'])
     return (jid, jpass) if jid and jpass else (None, None)
   @classmethod
-  def getXMPPDefaultMessage(cls):
-    return cls.readSetting("XMPP", "message", cls.default['jmessage'])
+  def getXMPPMessage(cls):
+    path=os.path.join(runPath, "..", cls.readSetting("XMPP", "message path", cls.default['jmessage']))
+    try:
+      return open(path, 'r').read()
+    except:
+      return None
+  @classmethod
+  def getMailCredentials(cls):
+    mail=cls.readSetting("Mail", "email", cls.default['mail'])
+    mpass=cls.readSetting("Mail", "pass", cls.default['mailpass'])
+    return (mail, mpass) if mail and mpass else (None, None)
+  @classmethod
+  def getMailServer(cls):
+    server=cls.readSetting("Mail", "server", cls.default['mailserver'])
+    port=cls.readSetting("Mail", "port", cls.default['mailport'])
+    return (server, port) if server else (None, None)
+  @classmethod
+  def getMailMessage(cls):
+    path=os.path.join(runPath, "..", cls.readSetting("Mail", "message path", cls.default['mailmessage']))
+    try:
+      return open(path, 'r').read()
+    except:
+      return None
   @classmethod
   def getIRCcredentials(cls):
     return cls.readSetting("IRC", "username", cls.default['irc'])
   @classmethod
-  def getIRCDefaultMessage(cls):
-    return cls.readSetting("IRC", "message", cls.default['ircmessage'])
+  def getIRCMessage(cls):
+    path=os.path.join(runPath, "..", cls.readSetting("IRC", "message path", cls.default['mailmessage']))
+    try:
+      return open(path, 'r').read()
+    except:
+      return None
   @classmethod
   def getMaxAttempts(cls):
     return cls.readSetting("Actions", "max attempts", cls.default['maxAttempts'])
