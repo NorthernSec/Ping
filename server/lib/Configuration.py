@@ -17,13 +17,14 @@ import configparser
 class Configuration():
   ConfigParser = configparser.ConfigParser()
   ConfigParser.read(os.path.join(runPath, "../etc/configuration.ini"))
-  default = {'defWarnTime': 5, 'defExtension': 7, 'dbPath': "db.sqlite",
+  default = {'defWarnTime': 5, 'defExtension': 7,
+             'dbPath': "db.sqlite", 'tmpdbPath': "/tmp/pingtokendb.sqlite",
              'maxAttempts': 5, 'maxActions':5,
              'saltLength': 10, 'hashRounds': 8000,
              'jid': "", 'jpass': "", 'jmessage':"./messages/xmpp.msg",
              'irc': "DeathClock",  'ircmessage':"./messages/irc.msg",
              'mail': "", 'mailpass': "", 'mailmessage': "./messages/mail.msg",
-             'mailserver': "", 'mailport': 587,
+             'mailserver': "", 'mailport': 587, 'tokenmessage': "./messages/token.msg",
              'pingHost':  "127.0.0.1",                 'pingPort':  10000,               'pingDebug':  True,
              'flaskHost': "127.0.0.1",                 'flaskPort': 5060,                'flaskDebug': True,
              'sslCertificate': "./ssl/cve-search.crt", 'sslKey': "./ssl/cve-search.crt", 'ssl': False}
@@ -50,15 +51,19 @@ class Configuration():
   def getDefaultExtension(cls):
     return cls.readSetting("User", "default extension", cls.default['defExtension'])
   @classmethod
-  def getDatabase(cls):
-    return os.path.join(runPath, "..", cls.readSetting("Database", "path", cls.default['dbPath']))
-  @classmethod
   def getSaltLength(cls):
     return cls.readSetting("User", "salt length", cls.default['saltLength'])
   @classmethod
   def getHashRounds(cls):
     return cls.readSetting("User", "hashing rounds", cls.default['hashRounds'])
 
+  # Database
+  @classmethod
+  def getDatabase(cls):
+    return os.path.join(runPath, "..", cls.readSetting("Database", "path", cls.default['dbPath']))
+  @classmethod
+  def getTempDatabase(cls):
+    return os.path.join(runPath, "..", cls.readSetting("Database", "temp", cls.default['tmpdbPath']))
  
   # Actions
   @classmethod
@@ -86,6 +91,12 @@ class Configuration():
   @classmethod
   def getMailMessage(cls):
     path=os.path.join(runPath, "..", cls.readSetting("Mail", "message path", cls.default['mailmessage']))
+    try:
+      return open(path, 'r').read()
+    except:
+      return None
+  def getTokenMessage(cls):
+    path=os.path.join(runPath, "..", cls.readSetting("Mail", "token path", cls.default['tokenmessage']))
     try:
       return open(path, 'r').read()
     except:
