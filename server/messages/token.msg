@@ -1,3 +1,5 @@
+Subject: Token request
+
 Your token for Northernsec's Ping Sign-up: %token%
 
 Kind regards,

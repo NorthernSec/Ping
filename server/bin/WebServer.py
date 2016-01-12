@@ -29,7 +29,7 @@ from lib.Communication import MailBot
 from lib.Configuration import Configuration as conf
 from lib.Exceptions import UserIsDead, UserAlreadyExists
 from lib.Users import User
-
+from lib.User  import User as UserObj
 import lib.DatabaseConnection as db
 
 # variables
@@ -111,12 +111,13 @@ def change_pass():
 def token_request():
   email = request.args.get('email', type=str)
   # TODO: Check mail format
-  if db.getUser(email): return jsonify({"status": "user exists"})
+  if db.getUser(email)[0]: return jsonify({"status": "user exists"})
   # Don't allow certain domains
   domain = email[email.index("@")+1:]
   if domain in conf.getBannedDomains():
     return jsonify({"status": "invalid domain"})
-  token = random.SystemRandom().randint(0, 99999999)
+  token = str(random.SystemRandom().randint(0, 99999999))
+  token = "0"*(8-len(token))+token
   token = "%s %s"%(token[:4], token[4:]) # user friendliness
   db.addToken(email, token)
   message=tokenMail.replace("%token%", token)
@@ -137,7 +138,7 @@ def create_account():
   # 'if token and' to prevent bypassing with empty token
   if token and token == db.getToken(email):
     try:
-      person = User(email, pwd)
+      person = UserObj(email, pwd)
       db.removeToken(email) # remove token first, to prevent fake registration
       db.addUser(person)
       return jsonify({"status": "success"})

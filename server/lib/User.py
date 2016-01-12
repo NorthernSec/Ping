@@ -54,6 +54,7 @@ class User():
     self.setPassword(self.password)
     self.defaultExtension=conf.getDefaultExtension()
     self.defaultWarnTime=conf.getDefaultWarnTime()
+    self.deathDate=0 # Prevents error when pinging
     self.ping()
     self.joinTime=self.lastPing
 

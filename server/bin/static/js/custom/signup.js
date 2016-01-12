@@ -2,25 +2,25 @@ $(document).ready(function(){
   $('#token_request').click(function(){
     var email   =$("#username").val();
     payload={email:    email}
-      $.getJSON('/_request_token', payload, function(data){
-        switch(data['status']){
-          case "success":
-            setStatus("Token sent to your e-mail", "success");
-            break;
-          case "mail failed":
-            setStatus("We failed to send you the token", "danger");
-            break;
-          case "invalid mail":
-            setStatus("Your email doesn't seem to be complient", "danger");
-            break;
-          case "invalid domain":
-            setStatus("We do not allow this domain", "danger");
-            break;
-          case "user exists":
-            setStatus("This e-mail is already registered", "danger");
-            break;
-          default:
-            setStatus("A problem occurred with the server!", "danger");
+    $.getJSON('/_request_token', payload, function(data){
+      switch(data['status']){
+        case "success":
+          setStatus("Token sent to your e-mail", "success");
+          break;
+        case "mail failed":
+          setStatus("We failed to send you the token", "danger");
+          break;
+        case "invalid mail":
+          setStatus("Your email doesn't seem to be complient", "danger");
+          break;
+        case "invalid domain":
+          setStatus("We do not allow this domain", "danger");
+          break;
+        case "user exists":
+          setStatus("This e-mail is already registered", "danger");
+          break;
+        default:
+          setStatus("A problem occurred with the server!", "danger");
       }
     })
   });
@@ -29,7 +29,7 @@ $(document).ready(function(){
     var password=$("#password").val();
     var repeat  =$("#repeat").val();
     var token   =$("#token").val();
-    if(newpass == repeat){
+    if(password == repeat){
       payload={email:    email,
                password: password,
                token:    token};
@@ -46,7 +46,8 @@ $(document).ready(function(){
             break;
           default:
             setStatus("A problem occurred with the server!", "danger");
-      }
+        }
+      })
     }else{
       setStatus("The passwords don't match!", "danger")
     }

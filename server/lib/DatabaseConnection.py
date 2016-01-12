@@ -28,7 +28,7 @@ def dbOperand(func):
   return func_wrapper
 def tmpdbOperand(func):
   def func_wrapper(*args, **kwargs):
-    conn, cur=getConnection()
+    conn, cur=getConnectionTemp()
     result = func(conn, cur, *args, **kwargs)
     conn.close()
     return result
@@ -64,7 +64,7 @@ def getConnectionTemp():
                   (email  TEXT     PRIMARY KEY,
                    token  TEXT     NOT NULL,
                    time   INTEGER  NOT NULL);''')
-  return conn
+  return (conn, conn.cursor())
 
 ################
 # Long term DB #
@@ -74,7 +74,7 @@ def getConnectionTemp():
 @dbOperand
 def addUser(conn, curs, user):
   if type(user)!=User: raise(InvalidVarType)
-  if getUser(user.email): raise(UserAlreadyExists)
+  if getUser(user.email)[0]: raise(UserAlreadyExists)
   curs.execute('''INSERT INTO Users
                   (email, password, joinTime, defaultExtension, defaultWarnTime,
                    lastPing, warnDate, deathDate)
@@ -206,18 +206,19 @@ def getNewDeaths():
 @tmpdbOperand
 def addToken(conn, curs, email, token):
   now=calendar.timegm(time.gmtime())
-  curs.execute('''INSERT INTO Tokens(email, token, time)
+  curs.execute('''INSERT OR REPLACE INTO Tokens(email, token, time)
                   VALUES(:e,:t,:n)''',{'e':email, 't':token, 'n': now})
   conn.commit()
 
 @tmpdbOperand
 def getToken(conn, curs, email):
-  t=selectAllFromDB("Users", "email='%s'"%email)
+  t=selectAllFromTMPDB("Tokens", "email='%s'"%email)
   return t[0]['token'] if len(t)!=0 else None
 
 @tmpdbOperand
 def removeToken(conn, curs, email):
-  print("to-do")
+  curs.execute("DELETE FROM Tokens WHERE email=?", (email,))
+  conn.commit()
 
 @dbOperand
 def selectAllFromDB(conn, curs, table, where=None):
