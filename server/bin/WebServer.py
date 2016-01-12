@@ -27,7 +27,7 @@ import time
 
 from lib.Communication import MailBot
 from lib.Configuration import Configuration as conf
-from lib.Exceptions import UserIsDead
+from lib.Exceptions import UserIsDead, UserAlreadyExists
 from lib.Users import User
 
 import lib.DatabaseConnection as db
@@ -142,7 +142,7 @@ def create_account():
       db.addUser(person)
       return jsonify({"status": "success"})
     except UserAlreadyExists:
-      return jsonify("status": "already exists")
+      return jsonify({"status": "already exists"})
   else:
     return jsonify({"status": "invalid token"})
 
