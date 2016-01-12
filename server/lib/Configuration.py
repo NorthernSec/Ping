@@ -13,6 +13,7 @@ import os
 runPath = os.path.dirname(os.path.realpath(__file__))
 
 import configparser
+import re
 
 class Configuration():
   ConfigParser = configparser.ConfigParser()
@@ -27,7 +28,8 @@ class Configuration():
              'mailserver': "", 'mailport': 587, 'tokenmessage': "./messages/token.msg",
              'pingHost':  "127.0.0.1",                 'pingPort':  10000,               'pingDebug':  True,
              'flaskHost': "127.0.0.1",                 'flaskPort': 5060,                'flaskDebug': True,
-             'sslCertificate': "./ssl/cve-search.crt", 'sslKey': "./ssl/cve-search.crt", 'ssl': False}
+             'sslCertificate': "./ssl/cve-search.crt", 'sslKey': "./ssl/cve-search.crt", 'ssl': False,
+             'bannedDomains': ""}
 
   @classmethod
   def readSetting(cls, section, item, default):
@@ -56,6 +58,10 @@ class Configuration():
   @classmethod
   def getHashRounds(cls):
     return cls.readSetting("User", "hashing rounds", cls.default['hashRounds'])
+  @classmethod
+  def getBannedDomains(cls):
+    domains=cls.readSetting("User", "banned domains", cls.default['bannedDomains'])
+    return [x.strip() for x in re.split(";| |,", domains)]
 
   # Database
   @classmethod
@@ -95,6 +101,7 @@ class Configuration():
       return open(path, 'r').read()
     except:
       return None
+  @classmethod
   def getTokenMessage(cls):
     path=os.path.join(runPath, "..", cls.readSetting("Mail", "token path", cls.default['tokenmessage']))
     try:

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Sign-up page</title>
+   <!-- defaults -->
+  {% include 'defaultHead.html' %}
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- Nav -->
+        {% include 'menu.html' %}
+        <div id="status"> </div>
+        <div id="content">
+          <div class="well well-small">
+            <strong>Sign-up</strong>
+            <table>
+              <tr><td>Email address:   </td>  <td><input type="text"     id="username" name="username"/></tr>
+              <tr><td>Password:        </td>  <td><input type="password" id="password" name="password"/></tr>
+              <tr><td>Repeat password: </td>  <td><input type="password" id="repeat"   name="repeat"/>  </tr>
+            </table> <br />
+            <button id="token_request">Mail me a token<button/> <br />
+            Token: <input type="text" id="token" name="token" /> <br />
+            <button id="create">Create my account<button/>
+          </div>
+        </div>
+        <!-- end content -->
+      </div>
+    </div>
+  </div>
+</body>
+
+

@@ -25,6 +25,7 @@ import random
 import signal
 import time
 
+from lib.Communication import MailBot
 from lib.Configuration import Configuration as conf
 from lib.Exceptions import UserIsDead
 from lib.Users import User
@@ -92,9 +93,9 @@ def validate_login():
 
 @app.route('/_change_pass')
 def change_pass():
-  old=items=request.args.get('password',        type=str)
-  new=items=request.args.get('new_password',    type=str)
-  person=current_user.user
+  old = request.args.get('password',     type=str)
+  new = request.args.get('new_password', type=str)
+  person = current_user.user
   if not person.verifyPassword(old):
     return jsonify({"status": "no match"})
   else:
@@ -105,6 +106,46 @@ def change_pass():
       return jsonify({"status": "success"})
     except:
       return jsonify({"status": "failed"})
+
+@app.route('/_request_token')
+def token_request():
+  email = request.args.get('email', type=str)
+  # TODO: Check mail format
+  if db.getUser(email): return jsonify({"status": "user exists"})
+  # Don't allow certain domains
+  domain = email[email.index("@")+1:]
+  if domain in conf.getBannedDomains():
+    return jsonify({"status": "invalid domain"})
+  token = random.SystemRandom().randint(0, 99999999)
+  token = "%s %s"%(token[:4], token[4:]) # user friendliness
+  db.addToken(email, token)
+  message=tokenMail.replace("%token%", token)
+  try:
+    mailer=MailBot()
+    mailer.login()
+    mailer.sendMail(email, message)
+    mailer.logout()
+    return jsonify({"status": "success"})
+  except:
+    return jsonify({"status": "mail failed"})
+
+@app.route('/_create_account')
+def create_account():
+  email = request.args.get('email', type=str)
+  pwd   = request.args.get('password', type=str)
+  token = request.args.get('token', type=str)
+  # 'if token and' to prevent bypassing with empty token
+  if token and token == db.getToken(email):
+    try:
+      person = User(email, pwd)
+      db.removeToken(email) # remove token first, to prevent fake registration
+      db.addUser(person)
+      return jsonify({"status": "success"})
+    except UserAlreadyExists:
+      return jsonify("status": "already exists")
+  else:
+    return jsonify({"status": "invalid token"})
+
 
 # filters
 @app.template_filter('fromUTC')
@@ -138,6 +179,12 @@ def shutdown():
   stop_loop()
 
 if __name__ == '__main__':
+  # check needed config settings:
+  
+  tokenMail = conf.getTokenMessage()
+  if not tokenMail or not "%token%" in tokenMail:
+    sys.exit("Please check the message for tokens")
+
   # get properties
   host, port = conf.getWebAddress()
   debug = conf.getWebDebug()

@@ -63,7 +63,7 @@ def getConnectionTemp():
   conn.execute('''CREATE TABLE IF NOT EXISTS Tokens
                   (email  TEXT     PRIMARY KEY,
                    token  TEXT     NOT NULL,
-                   time   INTEGER  NOT NULL);'''
+                   time   INTEGER  NOT NULL);''')
   return conn
 
 ################
@@ -203,19 +203,19 @@ def getNewDeaths():
 ###########
 
 # Adding data
-@tmpOperand
+@tmpdbOperand
 def addToken(conn, curs, email, token):
   now=calendar.timegm(time.gmtime())
   curs.execute('''INSERT INTO Tokens(email, token, time)
                   VALUES(:e,:t,:n)''',{'e':email, 't':token, 'n': now})
   conn.commit()
 
-@tmpOperand
+@tmpdbOperand
 def getToken(conn, curs, email):
   t=selectAllFromDB("Users", "email='%s'"%email)
-  return t[0] if len(t)!=0 else None
+  return t[0]['token'] if len(t)!=0 else None
 
-@tmpOperand
+@tmpdbOperand
 def removeToken(conn, curs, email):
   print("to-do")
 
