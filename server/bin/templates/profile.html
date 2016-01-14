@@ -21,23 +21,52 @@
         <div>
           <!-- Status -->
           <div id="status"> </div>
-          <!-- Profile info -->
-          <table class="table table-striped table-hover table-bordered profile-info">
-            <tr><td>E-mail:                         </td><td>{{user.user.email}}                                         </td></tr>
-            <tr><td>Joined:                         </td><td>{{user.user.joinTime|fromUTC}}                              </td></tr>
-            <tr><td>Ping reminder:                  </td><td>as of {{user.user.warnDate|fromUTC}}                        </td></tr>
-            <tr><td>Marked dead:                    </td><td>as of {{user.user.deathDate|fromUTC}}                       </td></tr>
-            <tr><td>Warn me when inactive for:      </td><td><span id="warn">{{user.user.defaultWarnTime}}</span> day(s) </td></tr>
-            <tr><td>Mark me dead when inactive for: </td><td><span id="dead">{{user.user.defaultExtension}}</span> day(s)</td></tr>
-          </table>
+          <div id="left-pannel">
+            <!-- Profile info -->
+            <table class="table table-striped table-hover table-bordered profile-info">
+              <tr><td>E-mail:                         </td><td>{{user.user.email}}                                         </td></tr>
+              <tr><td>Joined:                         </td><td>{{user.user.joinTime|fromUTC}}                              </td></tr>
+              <tr><td>Ping reminder:                  </td><td>as of {{user.user.warnDate|fromUTC}}                        </td></tr>
+              <tr><td>Marked dead:                    </td><td>as of {{user.user.deathDate|fromUTC}}                       </td></tr>
+              <tr><td>Warn me when inactive for:      </td><td><span id="warn">{{user.user.defaultWarnTime}}</span> day(s) </td></tr>
+              <tr><td>Mark me dead when inactive for: </td><td><span id="dead">{{user.user.defaultExtension}}</span> day(s)</td></tr>
+            </table>
 
-          <!-- Password stuff -->
-          <table class="table table-striped table-hover table-bordered profile-info">
-            <tr><td>Current password:    </td><td><input id="passwd"        type="password"></input></td></tr>
-            <tr><td>New password:        </td><td><input id="new_passwd"    type="password"></input></td></tr>
-            <tr><td>Repeat new password: </td><td><input id="repeat_passwd" type="password"></input></td></tr>
-            <tr><td colspan=2> <button id="change_pass">Change password</button> </td><tr>
-          </table>
+            <!-- Password stuff -->
+            <table class="table table-striped table-hover table-bordered profile-info">
+              <tr><td>Current password:    </td><td><input id="passwd"        type="password"></input></td></tr>
+              <tr><td>New password:        </td><td><input id="new_passwd"    type="password"></input></td></tr>
+              <tr><td>Repeat new password: </td><td><input id="repeat_passwd" type="password"></input></td></tr>
+              <tr><td colspan=2> <button id="change_pass">Change password</button> </td><tr>
+            </table>
+          </div>
+
+          <div id='right-pannel'>
+            <table id="actions" class="table table-striped table-hover table-bordered">
+              <thead>
+                <tr><td>Platform</td>
+                    <td>To</td> 
+                    <td>Username</td>
+                    <td>Message</td></tr>
+              </thead>
+              <tbody>
+                {% for a in actions %}
+                  {% if a.username %} {% set uname = a.username %}
+                  {% else %} {% set uname = user.user.email %}
+                  {% endif%}
+                  {% if uname|length > 13 %} {% set uname = uname[:10] + "..."%}
+                  {% endif %}
+                  {% if a.message != None %} {% set mess = "glyphicon glyphicon-star"%}
+                  {% else %} {% set mess = ""%}
+                  {% endif %}
+                  <tr><td>{{a.action}}</td>
+                      <td>{{a.target}}</td>
+                      <td>{{uname[:10]}}</td>
+                      <td><span class="{{mess}}"></span></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
         <!-- end content -->
       </div>

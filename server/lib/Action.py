@@ -26,12 +26,13 @@ class Action():
                attempts=0, id=None):
     self.validateVars(user, action, target, username, message,
                       attempts, id)
-    self.user=user.strip()
+    self.user=user
     self.action=action.strip()
     self.target=target.strip()
-    self.username=username.strip()
-    self.message=message.strip()
-    self.atttempts=attempts.strip()
+    self.username=username.strip() if username else None
+    self.message=message.strip()   if message  else None
+    self.atttempts=attempts
+    self.id=id
 
   def validateVars(self, u, a, t, un, m, at, id):
     if( not all(isinstance(x,str) for x in [a, t]) or
@@ -40,14 +41,14 @@ class Action():
     (type(m)  is not str and m  is not None) or
     (type(at) is not int) or
     (type(id) is not int and id is not None)): raise(InvalidVarType)
-    if action.strip() not in ['irc', 'xmpp', 'mail']:
+    if a.strip() not in ['irc', 'xmpp', 'mail']:
       raise(InvalidAction)
     # check if target patterns are correct
-    if action.strip()=='irc':
+    if a.strip()=='irc':
       print("xxx.xxx.xxx[:port],(#)user or chan separated by , but no trailing ,")
-    elif action.strip()=='xmpp':
+    elif a.strip()=='xmpp':
       print("xxx@xxx.xxx[,xxx@xxx.xxx]*")
-    elif action.strip()=='mail':
+    elif a.strip()=='mail':
       print("same as xmpp")
     # Throws InvalidTarget if fails
 

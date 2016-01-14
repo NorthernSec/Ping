@@ -52,7 +52,9 @@ def index():
 @app.route('/profile', methods=['get'])
 @login_required
 def profile():
-  return render_template('profile.html', user=current_user)
+  user   = current_user
+  actions=db.getActions(user.user)
+  return render_template('profile.html', user=user, actions=actions)
 
 @app.route('/login', methods=['get'])
 def login():
