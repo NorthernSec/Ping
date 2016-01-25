@@ -112,7 +112,7 @@ def change_pass():
 @app.route('/_request_token')
 def token_request():
   email = request.args.get('email', type=str)
-  # TODO: Check mail format
+  if not isMail(email):    return jsonify({"status": "invalid mail"})
   if db.getUser(email)[0]: return jsonify({"status": "user exists"})
   # Don't allow certain domains
   domain = email[email.index("@")+1:]
@@ -148,6 +148,11 @@ def create_account():
       return jsonify({"status": "already exists"})
   else:
     return jsonify({"status": "invalid token"})
+
+
+def isEmail(mail):
+  mailreg=re.compile("^[_.0-9a-z-]+@([0-9a-z][0-9a-z]+.)+[a-z]{2,4}$")
+  return True if mailreg.match(mail.lower()) else False
 
 
 # filters
