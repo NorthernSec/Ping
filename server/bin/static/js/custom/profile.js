@@ -26,4 +26,11 @@ $(document).ready(function(){
       setStatus("The new passwords don't match!", "danger")
     }
   });
+   $('[id^="edit-"]').click(function(){
+     uid=this.id.split("-")[1];
+     row=$("#action-"+uid);
+     cells=row.find('td');
+     alert(cells[0].innerHTML)
+   });
+
 })
