@@ -161,39 +161,48 @@ def getUsers():
   return users
 
 def getUser(email):
-  u=selectAllFromDB("Users", "email='%s'"%email)
+  u=selectAllFromDB("Users", ("email=?",(email,)))
   if len(u)!=0:
     u=u[0]
     return (u['id'], userFromDict(u))
   else:
     return (None, None)
 
+def getAction(user, action, target):
+  if type(user)!=User: raise(InvalidVarType)
+  id, user=getUser(user.email)
+  wh = (["userID = ?", "action = ?", "target = ?"%target],
+       (id, action, target))
+  response = selectAllFromDB("Actions", where=wh)
+  return response[0] if len(response)>0 else None
+
 def getActions(user):
   if type(user)!=User: raise(InvalidVarType)
   id, user=getUser(user.email)
   if not id: return None
   actions=[]
-  for a in selectAllFromDB("Actions", where="userID = %s"%id):
+  for a in selectAllFromDB("Actions", where=("userID = ?",(id,))):
     actions.append(actionFromDict(user, a))
+  list(filter(None, actions))
   return actions
 
 def getActionsToDo():
   actions=[]
-  wh=["attempts > 0", "attempts < %s"%conf.getMaxAttempts()]
+  wh=(["attempts > 0", "attempts < ?"], (conf.getMaxAttempts(),))
   for a in selectAllFromDB("Actions", where=wh):
     actions.append(actionFromDict(a))
   return actions
 
 def getDeaths():
   users=[]
-  for u in selectAllFromDB("Users", where="deathDate = -1"):
+  for u in selectAllFromDB("Users", where=("deathDate = -1", ())):
     users.append(userFromDict(u))
   return users
 
 def getNewDeaths():
   users=[]
   now=calendar.timegm(time.gmtime())
-  wh=["deathDate < %s"%now, "deathDate != -1"]
+  wh=(["deathDate < %s", "deathDate != -1"], (now,))
   for u in selectAllFromDB("Users", where = wh):
     users.append(userFromDict(u))
   return users
@@ -229,9 +238,11 @@ def selectAllFromTMPDB(conn, curs, table, where=None):
   return selectAllFrom(conn, curs, table, where)
 
 def selectAllFrom(conn, curs, table, where=None):
-  if type(where) is str: where = [where]
-  wh="where "+" and ".join(where) if where else ""
-  data=list(curs.execute("SELECT * FROM %s %s;"%(table,wh)))
+  if where: where=list(where) # tupel to list for var modification
+  if where and type(where[0]) is str: where[0] = [where[0]]
+  vals = where[1] if where else ()
+  wh="where "+" and ".join(where[0]) if where else ""
+  data=list(curs.execute("SELECT * FROM %s %s;"%(table,wh), vals))
   dataArray=[]
   names = list(map(lambda x: x[0], curs.description))
   for d in data:
