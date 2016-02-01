@@ -17,8 +17,9 @@ import time
 
 from passlib.hash import pbkdf2_sha256
 
+from lib.Controls import isEmail, isXMPP, getIRC
 from lib.User import User
-from lib.Exceptions import InvalidVarType
+from lib.Exceptions import InvalidVarType, InvalidAction, InvalidTarget
 from lib.Configuration import Configuration as conf
 
 class Action():
@@ -45,12 +46,14 @@ class Action():
       raise(InvalidAction)
     # check if target patterns are correct
     if a.strip()=='irc':
-      print("xxx.xxx.xxx[:port],(#)user or chan separated by , but no trailing ,")
+      domain, port, users = getIRC(t.strip())
+      if not domain: raise(InvalidTarget)
     elif a.strip()=='xmpp':
-      print("xxx@xxx.xxx[,xxx@xxx.xxx]*")
+      if False in [isXMPP(x) for x in t.strip().split(",")]:
+        raise(InvalidTarget)
     elif a.strip()=='mail':
-      print("same as xmpp")
-    # Throws InvalidTarget if fails
+      if False in [isEmail(x) for x in t.strip().split(",")]:
+        raise(InvalidTarget)
 
   def isSimilar(self, action):
     if (action.user.email == self.user.email and

@@ -27,6 +27,7 @@ import time
 
 from lib.Communication import MailBot
 from lib.Configuration import Configuration as conf
+from lib.Controls import isEmail
 from lib.Exceptions import UserIsDead, UserAlreadyExists
 from lib.Users import User
 from lib.User  import User as UserObj
@@ -53,7 +54,7 @@ def index():
 @login_required
 def profile():
   user   = current_user
-  actions=db.getActions(user.user)
+  actions = list(filter(None, db.getActions(user.user)))
   return render_template('profile.html', user=user, actions=actions)
 
 @app.route('/login', methods=['get'])
@@ -149,11 +150,15 @@ def create_account():
   else:
     return jsonify({"status": "invalid token"})
 
-
-def isEmail(mail):
-  mailreg=re.compile("^[_.0-9a-z-]+@([0-9a-z][0-9a-z]+.)+[a-z]{2,4}$")
-  return True if mailreg.match(mail.lower()) else False
-
+@app.route('/_get_action_details')
+def get_action_details():
+  action = request.args.get('action', type=str)
+  target = request.args.get('target', type=str)
+  print(action, target)
+  response = None
+  if target and action:
+    response = db.getAction(current_user.user, action, target)
+  return jsonify(response)
 
 # filters
 @app.template_filter('fromUTC')
