@@ -17,7 +17,7 @@ sys.path.append(os.path.join(runPath, ".."))
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, jsonify, abort
 from flask.ext.login import LoginManager, current_user, login_user, logout_user, login_required
 from werkzeug import secure_filename
 import calendar
@@ -51,8 +51,9 @@ def index():
   return render_template('index.html')
 
 @app.route('/profile', methods=['get'])
-@login_required
 def profile():
+  if not current_user.is_authenticated():
+    return render_template('login.html', status=["default", "none"])
   user   = current_user
   actions = list(filter(None, db.getActions(user.user)))
   return render_template('profile.html', user=user, actions=actions)
@@ -95,6 +96,7 @@ def validate_login():
     return jsonify({"status": "user dead"})
 
 @app.route('/_change_pass')
+@login_required
 def change_pass():
   old = request.args.get('password',     type=str)
   new = request.args.get('new_password', type=str)
@@ -151,14 +153,31 @@ def create_account():
     return jsonify({"status": "invalid token"})
 
 @app.route('/_get_action_details')
+@login_required
 def get_action_details():
   action = request.args.get('action', type=str)
   target = request.args.get('target', type=str)
-  print(action, target)
   response = None
   if target and action:
     response = db.getAction(current_user.user, action, target)
   return jsonify(response)
+
+@app.route('/_remove_action')
+@login_required
+def remove_action():
+  action = request.args.get('action', type=str)
+  target = request.args.get('target', type=str)
+  if target and action:
+    try:
+      act = db.getAction(current_user.user, action, target)
+      db.removeAction(act)
+      return jsonify({"status": "success",
+                      "actions": db.getActions(current_user.user)})
+    except:
+      abort(400)
+  else:
+     print("data manipulation attempt detected!")
+
 
 # filters
 @app.template_filter('fromUTC')
@@ -169,6 +188,14 @@ def toDate_filter(x):
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+@app.errorhandler(409)
+def fraude_attempt(e):
+  return jsonify({"status": "fraude_attempt"})
+
+@app.errorhandler(400)
+def invalid_user_action(e):
+  return jsonify({"status": "invalid_user_action"})
 
 # signal handlers
 def sig_handler(sig, frame):

@@ -26,11 +26,36 @@ $(document).ready(function(){
       setStatus("The new passwords don't match!", "danger")
     }
   });
-   $('[id^="edit-"]').click(function(){
-     uid=this.id.split("-")[1];
-     row=$("#action-"+uid);
-     cells=row.find('td');
-     alert(cells[0].innerHTML)
-   });
-
+  $('[id^="edit-"]').click(function(){
+    uid=this.id.split("-")[1];
+    row=$("#action-"+uid);
+    cells=row.find('td');
+    payload={action: cells[0].innerHTML, target: cells[1].innerHTML}
+    $.getJSON('/_get_action_details', payload, function(data){
+      $("#method").val(data['action'])
+      $("#target").val(data['target'])
+      $("#username").val(data['username'])
+      $("#message").val(data['message'])
+    });
+  });
+  $('[id^="remove-"]').click(function(){
+    uid=this.id.split("-")[1];
+    row=$("#action-"+uid);
+    cells=row.find('td');
+    payload={action: cells[0].innerHTML, target: cells[1].innerHTML}
+    $.getJSON('/_remove_action', payload, function(data){
+      switch(data['status']){
+        case "success":
+          setStatus("Removed action", "success");
+          // use data["actions"] to re-fill table
+          break;
+        case "invalid_user_action":
+          setStatus("This action could not be completed because the data was manipulated elsewhere.", "warning");
+          break;
+        case "fraude_attempt":
+          setStatus("Please don't try to manipulate calls... We don't appreciate that.", "error");
+          break;
+      }
+    });
+  });
 })

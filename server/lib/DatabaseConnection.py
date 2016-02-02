@@ -171,10 +171,10 @@ def getUser(email):
 def getAction(user, action, target):
   if type(user)!=User: raise(InvalidVarType)
   id, user=getUser(user.email)
-  wh = (["userID = ?", "action = ?", "target = ?"%target],
+  wh = (["userID = ?", "action = ?", "target = ?"],
        (id, action, target))
   response = selectAllFromDB("Actions", where=wh)
-  return response[0] if len(response)>0 else None
+  return  actionFromDict(user, response[0]) if len(response)>0 else None
 
 def getActions(user):
   if type(user)!=User: raise(InvalidVarType)
@@ -206,6 +206,16 @@ def getNewDeaths():
   for u in selectAllFromDB("Users", where = wh):
     users.append(userFromDict(u))
   return users
+
+# Deleting data
+@dbOperand
+def removeAction(conn, curs, action):
+  if type(action)!=Action: raise(InvalidVarType)
+  uid, user = getUser(action.user.email)
+  if not uid: raise(UserDoesNotExist())
+  curs.execute("DELETE FROM Actions WHERE userID=? and action=? and target=?",
+               (uid,action.action, action.target))
+  conn.commit()
 
 ###########
 # Temp DB #
