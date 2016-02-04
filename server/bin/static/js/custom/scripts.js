@@ -52,3 +52,31 @@ function setStatus(text, status){
   $("#status").addClass("alert alert-"+status);
   $("#status").append(text);
 }
+
+function parseStatus(status){
+  _ok = false;
+  switch(status){
+    case "logged_in":		_ok=true;break;
+    case "pass_updated":	setStatus("Changed your password!",								"success");_ok=true;break;
+    case "action_removed":	setStatus("The action was removed.",								"success");_ok=true;break;
+    case "token_sent":		setStatus("Token sent to your e-mail",								"success");_ok=true;break;
+    case "account_created":	setStatus("Your account was created! You can now log in",					"success");_ok=true;break;
+
+    case "user_pass_mismatch":	setStatus("Wrong user/password combination!",							"danger"); break;
+    case "user_exists":		setStatus("This e-mail is already registered",							"danger"); break;
+    case "user_is_dead":	setStatus("This user is already marked as dead!",						"danger"); break;
+    case "wrong_pass":		setStatus("The entered password is wrong!",							"danger"); break;
+    case "user_action_failed":	setStatus("An error occured! Changes have not been saved!",					"danger"); break;
+    case "edit_conflict":	setStatus("This action could not be completed because the data was manipulated elsewhere.",	"warning");break;
+    case "fraud_attempt":	setStatus("Please don't try to manipulate calls... We don't appreciate that.",			"error");  break;
+    case "mail_failed":		setStatus("We failed to send you the token", 							"danger"); break;
+    case "invalid_mail":	setStatus("Your email doesn't seem to be complient", 						"danger"); break;
+    case "banned_domain":	setStatus("We do not allow this domain",							"danger"); break;
+    case "invalid_token":	setStatus("The token/email combination doesn't match!",						"danger"); break;
+    case "pass_mismatch":	setStatus("The two password fields are not the same!",						"danger"); break;
+
+    default:
+      setStatus("A problem occurred with the server!", "danger");
+  }
+  return _ok;
+}

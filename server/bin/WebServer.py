@@ -89,11 +89,11 @@ def validate_login():
       login_user(person)
       person.user.ping() #If a user can log in, he's alive
       db.updateUser(person.user)
-      return jsonify({"status": "success"})
+      return jsonify({"status": "logged_in"})
     else:
-      return jsonify({"status": "no match"})
+      return jsonify({"status": "user_pass_mismatch"})
   except UserIsDead:
-    return jsonify({"status": "user dead"})
+    return jsonify({"status": "user_is_dead"})
 
 @app.route('/_change_pass')
 @login_required
@@ -102,25 +102,25 @@ def change_pass():
   new = request.args.get('new_password', type=str)
   person = current_user.user
   if not person.verifyPassword(old):
-    return jsonify({"status": "no match"})
+    return jsonify({"status": "wrong_pass"})
   else:
     try:
       person.setPassword(new)
       person.ping() #If a user can change his password, he's alive
       db.updateUser(person)
-      return jsonify({"status": "success"})
+      return jsonify({"status": "pass_updated"})
     except:
-      return jsonify({"status": "failed"})
+      return jsonify({"status": "user_action_failed"})
 
 @app.route('/_request_token')
 def token_request():
   email = request.args.get('email', type=str)
-  if not isMail(email):    return jsonify({"status": "invalid mail"})
-  if db.getUser(email)[0]: return jsonify({"status": "user exists"})
+  if not isMail(email):    return jsonify({"status": "invalid_mail"})
+  if db.getUser(email)[0]: return jsonify({"status": "user_exists"})
   # Don't allow certain domains
   domain = email[email.index("@")+1:]
   if domain in conf.getBannedDomains():
-    return jsonify({"status": "invalid domain"})
+    return jsonify({"status": "banned_domain"})
   token = str(random.SystemRandom().randint(0, 99999999))
   token = "0"*(8-len(token))+token
   token = "%s %s"%(token[:4], token[4:]) # user friendliness
@@ -131,9 +131,9 @@ def token_request():
     mailer.login()
     mailer.sendMail(email, message)
     mailer.logout()
-    return jsonify({"status": "success"})
+    return jsonify({"status": "token_sent"})
   except:
-    return jsonify({"status": "mail failed"})
+    return jsonify({"status": "mail_failed"})
 
 @app.route('/_create_account')
 def create_account():
@@ -146,11 +146,11 @@ def create_account():
       person = UserObj(email, pwd)
       db.removeToken(email) # remove token first, to prevent fake registration
       db.addUser(person)
-      return jsonify({"status": "success"})
+      return jsonify({"status": "account_created"})
     except UserAlreadyExists:
-      return jsonify({"status": "already exists"})
+      return jsonify({"status": "user_exists"})
   else:
-    return jsonify({"status": "invalid token"})
+    return jsonify({"status": "invalid_token"})
 
 @app.route('/_get_action_details')
 @login_required
@@ -162,6 +162,27 @@ def get_action_details():
     response = db.getAction(current_user.user, action, target)
   return jsonify(response)
 
+@app.route('/_add_action')
+@login_required
+def add_action():
+  action   = request.args.get('action', type=str)
+  target   = request.args.get('target', type=str)
+  username = request.args.get('username', type=str)
+  message  = request.args.get('message', type=str)
+  try:
+    act = Action(current_user.user, action, target, username, message)
+    db.addAction(act)
+    reply = {'status':  'action_added',
+             'actions': db.getActions(current_user.user)}
+  except (InvalidAction, InvalidVarType, UserDoesNotExist):
+    print("[!] user is sending forged messages")
+    abort(406)
+  except InvalidTarget:       reply = {'status': 'invalid_target'}
+  except TooManyActions:      reply = {'status': 'too_many_actions'}
+  except ActionAlreadyExists: reply = {'status': 'action_exists'}
+  except: reply = {'status': 'user_action_failed'}
+  return jsonify(reply)
+
 @app.route('/_remove_action')
 @login_required
 def remove_action():
@@ -171,13 +192,13 @@ def remove_action():
     try:
       act = db.getAction(current_user.user, action, target)
       db.removeAction(act)
-      return jsonify({"status": "success",
+      return jsonify({"status": "action_removed",
                       "actions": db.getActions(current_user.user)})
     except:
-      abort(400)
+      abort(409)
   else:
-     print("data manipulation attempt detected!")
-
+    print("data manipulation attempt detected!")
+    abort(406)
 
 # filters
 @app.template_filter('fromUTC')
@@ -189,13 +210,13 @@ def toDate_filter(x):
 def page_not_found(e):
     return render_template('404.html'), 404
 
-@app.errorhandler(409)
-def fraude_attempt(e):
-  return jsonify({"status": "fraude_attempt"})
+@app.errorhandler(406)
+def fraud_attempt(e):
+  return jsonify({"status": "fraud_attempt"})
 
-@app.errorhandler(400)
-def invalid_user_action(e):
-  return jsonify({"status": "invalid_user_action"})
+@app.errorhandler(409)
+def edit_conflict(e):
+  return jsonify({"status": "edit_conflict"})
 
 # signal handlers
 def sig_handler(sig, frame):
