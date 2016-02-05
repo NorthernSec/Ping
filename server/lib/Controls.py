@@ -26,7 +26,7 @@ def getIRC(string):
       port = int(domain.split(":")[0])
     except:
       pass
-  ircreg=re.compile("^[_.0-9a-z-]+@([0-9a-z][0-9a-z]+.)+[a-z]{2,4}$")
+  ircreg=re.compile("^[_.0-9a-z-]+.([0-9a-z][0-9a-z]+.)+[a-z]{2,4}$")
   if ircreg.match(domain.lower()):
     return(domain, port, users)
   else:
