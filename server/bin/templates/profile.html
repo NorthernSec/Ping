@@ -52,26 +52,9 @@
                       <td>Actions</td></tr>
                 </thead>
                 <tbody>
-                  {% for a in actions %}
-                    {% if a.username %} {% set uname = a.username %}
-                    {% else %} {% set uname = user.user.email %}
-                    {% endif%}
-                    {% if uname|length > 13 %} {% set uname = uname[:10] + "..."%}
-                    {% endif %}
-                    {% if a.message != None %} {% set mess = "glyphicon glyphicon-star"%}
-                    {% else %} {% set mess = ""%}
-                    {% endif %}
-                    <tr id="action-{{loop.index}}">
-                      <td>{{a.action}}</td>
-                      <td>{{a.target}}</td>
-                      <td>{{uname[:10]}}</td>
-                      <td><div rel="tooltip" title="{{a.message}}">
-                          <span class="{{mess}}"></span></div></td>
-                      <td><span id="edit-{{loop.index}}"   title="edit"   class="glyphicon glyphicon-edit" data-toggle="modal" data-target="#editmodal"></span>
-                          <span id="remove-{{loop.index}}" title="remove" class="glyphicon glyphicon-remove"></span></td></tr>
-                  {% endfor %}
                 </tbody>
               </table>
+              <button id="add-action">New action</button>
             </div>
           </div>
           <!-- edit modal -->

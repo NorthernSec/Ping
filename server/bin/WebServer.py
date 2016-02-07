@@ -54,9 +54,7 @@ def index():
 def profile():
   if not current_user.is_authenticated():
     return render_template('login.html', status=["default", "none"])
-  user   = current_user
-  actions = list(filter(None, db.getActions(user.user)))
-  return render_template('profile.html', user=user, actions=actions)
+  return render_template('profile.html', user=current_user)
 
 @app.route('/login', methods=['get'])
 def login():
@@ -159,8 +157,14 @@ def get_action_details():
   target = request.args.get('target', type=str)
   response = None
   if target and action:
-    response = db.getAction(current_user.user, action, target)
+    response = db.getAction(current_user.user, action, target).getDict()
   return jsonify(response)
+
+@app.route('/_get_actions')
+@login_required
+def get_actions():
+  ret = {'data': [x.getDict() for x in db.getActions(current_user.user)]}
+  return jsonify(ret)
 
 @app.route('/_add_action')
 @login_required

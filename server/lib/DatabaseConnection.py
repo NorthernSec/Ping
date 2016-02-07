@@ -90,7 +90,7 @@ def addAction(conn, curs, action):
   if type(action)!=Action: raise(InvalidVarType)
   current=getActions(action.user)
   if len(current)>=conf.getMaxActions(): raise(TooManyActions)
-  if True in [action.isSimilar(x) for x in current]:
+  if len(current)!=0 and True in [action.isSimilar(x) for x in current]:
    raise(ActionAlreadyExists)
   u = getUser(action.user.email)
   if not u[0]: raise(UserDoesNotExist())
@@ -183,8 +183,7 @@ def getActions(user):
   actions=[]
   for a in selectAllFromDB("Actions", where=("userID = ?",(id,))):
     actions.append(actionFromDict(user, a))
-  list(filter(None, actions))
-  return actions
+  return list(filter(None, actions))
 
 def getActionsToDo():
   actions=[]

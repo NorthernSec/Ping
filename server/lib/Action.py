@@ -60,3 +60,8 @@ class Action():
         action.action     == self.action and
         action.target     == self.target): return True
     return False
+
+  def getDict(self):
+    return {"user": self.user.email, "action": self.action,
+            "target": self.target,   "username": self.username,
+            "message": self.message}
