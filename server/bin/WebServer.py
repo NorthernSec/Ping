@@ -25,10 +25,11 @@ import random
 import signal
 import time
 
+from lib.Action import Action
 from lib.Communication import MailBot
 from lib.Configuration import Configuration as conf
 from lib.Controls import isEmail
-from lib.Exceptions import UserIsDead, UserAlreadyExists
+from lib.Exceptions import UserIsDead, UserAlreadyExists, InvalidAction, InvalidVarType, UserDoesNotExist, InvalidTarget, TooManyActions, ActionAlreadyExists
 from lib.Users import User
 from lib.User  import User as UserObj
 import lib.DatabaseConnection as db
@@ -169,10 +170,11 @@ def get_actions():
 @app.route('/_add_action')
 @login_required
 def add_action():
-  action   = request.args.get('action', type=str)
+  action   = request.args.get('method', type=str)
   target   = request.args.get('target', type=str)
   username = request.args.get('username', type=str)
   message  = request.args.get('message', type=str)
+  print(action, target, username, message)
   try:
     act = Action(current_user.user, action, target, username, message)
     db.addAction(act)
@@ -184,7 +186,9 @@ def add_action():
   except InvalidTarget:       reply = {'status': 'invalid_target'}
   except TooManyActions:      reply = {'status': 'too_many_actions'}
   except ActionAlreadyExists: reply = {'status': 'action_exists'}
-  except: reply = {'status': 'user_action_failed'}
+  except Exception as e:
+    print(e)
+    reply = {'status': 'user_action_failed'}
   return jsonify(reply)
 
 @app.route('/_remove_action')

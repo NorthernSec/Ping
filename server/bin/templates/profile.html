@@ -54,30 +54,30 @@
                 <tbody>
                 </tbody>
               </table>
-              <button id="add-action">New action</button>
+              <button id="new-action" data-toggle='modal' data-target='#editmodal'>New action</button>
             </div>
           </div>
           <!-- edit modal -->
           <div class="modal fade" id="editmodal" role="dialog">
             <div class="modal-dialog modal-sm">
-              <div class="modal-content">
+              <div class="modal-content" style="width: 400px;">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal">&times;</button>
                   <h4 class=modal-title>Edit Action</h4>
                 </div>
                 <div class="modal-body">
-                  <table>
+                  <table >
                     <tr><td>Method: </td><td>
                       <select id="method">
                         <option value="xmpp">xmpp</option>
                         <option value="irc" >irc </option>
                         <option value="mail">mail</option>
                       </select></td></tr>
-                    <tr><td>To:     </td><td><input    id="target"   type="text"></input></td></tr>
-                    <tr><td>Sent as:</td><td><input    id="username" type="text"></input></td></tr>
-                    <tr><td>Message:</td><td><textarea id="message"></textarea></td></tr>
+                    <tr><td>To:     </td><td><input    id="target"   type="text" style="width: 300px;"></input></td></tr>
+                    <tr><td>Sent as:</td><td><input    id="username" type="text" style="width: 300px;"></input></td></tr>
+                    <tr><td>Message:</td><td><textarea id="message" style="width: 300px;"></textarea></td></tr>
                   </table>
-                  <button id="save">Save</button>
+                  <button id="add-action">Save</button> <button id="update-action">Save</button>
                 </div>
               </div>
             </div>

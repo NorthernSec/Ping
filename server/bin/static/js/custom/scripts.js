@@ -76,6 +76,7 @@ function parseStatus(status){
     case "pass_mismatch":	setStatus("The two password fields are not the same!",						"danger"); break;
 
     default:
+      alert(status)
       setStatus("A problem occurred with the server!", "danger");
   }
   return _ok;

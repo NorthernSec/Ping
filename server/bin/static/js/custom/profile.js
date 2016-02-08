@@ -1,3 +1,4 @@
+var inUpdate = false;
 $(document).ready(function(){
   $('#change_pass').click(function(){
     var current=$("#passwd").val();
@@ -15,9 +16,46 @@ $(document).ready(function(){
       parseStatus("pass_mismatch")
     }
   });
+
+  $('#new-action').click(function(){
+    $("#method").val("xmpp");
+    $("#target").val("");
+    $("#username").val("");
+    $("#message").val("");
+    inUpdate=false;
+    $("#add-action").show();
+    $("#update-action").hide();
+  });
+
+  $('#add-action').click(function(){
+    payload={method:   $("#method").find(":selected").text(),   target:  $("#target").val(),
+             username: $("#username").val(), message: $("#message").val() }
+    $.getJSON('/_add_action', payload, function(data){
+      alert(data['status'])
+      parseStatus(data['status'])
+    })
+  });
+
+  $("#method").on('change', function(){ setTargetPlaceholder() });
+
+  setTargetPlaceholder()
   fillTable();
   activateButtons();
 });
+
+function setTargetPlaceholder(){
+  switch($("#method").val()){
+    case "xmpp":
+      $("#target").attr("placeholder", "xmpp account(s), separated by comma (,)");
+      break;
+    case "irc":
+      $("#target").attr("placeholder", "<irc server>[<port>],<users or channels, separated by comma (,)>");
+      break;
+    case "mail":
+      $("#target").attr("placeholder", "e-mail address(es), separated by comma (,)");
+      break;
+  }
+}
 
 function activateButtons(){
   $('[id^="edit-"]').click(function(){
@@ -31,6 +69,9 @@ function activateButtons(){
       $("#username").val(data['username'])
       $("#message").val(data['message'])
     });
+    inUpdate=true;
+    $("#add-action").hide();
+    $("#update-action").show();
   });
 
   $('[id^="remove-"]').click(function(){
