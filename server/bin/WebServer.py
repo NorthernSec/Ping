@@ -174,12 +174,10 @@ def add_action():
   target   = request.args.get('target', type=str)
   username = request.args.get('username', type=str)
   message  = request.args.get('message', type=str)
-  print(action, target, username, message)
   try:
     act = Action(current_user.user, action, target, username, message)
     db.addAction(act)
-    reply = {'status':  'action_added',
-             'actions': db.getActions(current_user.user)}
+    return jsonify({'status':  'action_added'})
   except (InvalidAction, InvalidVarType, UserDoesNotExist):
     print("[!] user is sending forged messages")
     abort(406)
@@ -188,8 +186,7 @@ def add_action():
   except ActionAlreadyExists: reply = {'status': 'action_exists'}
   except Exception as e:
     print(e)
-    reply = {'status': 'user_action_failed'}
-  return jsonify(reply)
+    return jsonify({'status': 'user_action_failed'})
 
 @app.route('/_remove_action')
 @login_required
@@ -200,9 +197,8 @@ def remove_action():
     try:
       act = db.getAction(current_user.user, action, target)
       db.removeAction(act)
-      return jsonify({"status": "action_removed",
-                      "actions": db.getActions(current_user.user)})
-    except:
+      return jsonify({"status": "action_removed"})
+    except Exception as e:
       abort(409)
   else:
     print("data manipulation attempt detected!")

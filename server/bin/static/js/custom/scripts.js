@@ -58,6 +58,7 @@ function parseStatus(status){
   switch(status){
     case "logged_in":		_ok=true;break;
     case "pass_updated":	setStatus("Changed your password!",								"success");_ok=true;break;
+    case "action_added":	setStatus("New action added.",									"success");_ok=true;break;
     case "action_removed":	setStatus("The action was removed.",								"success");_ok=true;break;
     case "token_sent":		setStatus("Token sent to your e-mail",								"success");_ok=true;break;
     case "account_created":	setStatus("Your account was created! You can now log in",					"success");_ok=true;break;
@@ -68,7 +69,8 @@ function parseStatus(status){
     case "wrong_pass":		setStatus("The entered password is wrong!",							"danger"); break;
     case "user_action_failed":	setStatus("An error occured! Changes have not been saved!",					"danger"); break;
     case "edit_conflict":	setStatus("This action could not be completed because the data was manipulated elsewhere.",	"warning");break;
-    case "fraud_attempt":	setStatus("Please don't try to manipulate calls... We don't appreciate that.",			"error");  break;
+    case "fraud_attempt":	setStatus("Please don't try to manipulate calls... We don't appreciate that.",			"danger"); break;
+    case "action_exists":	setStatus("A similar action already exists",							"danger"); break;
     case "mail_failed":		setStatus("We failed to send you the token", 							"danger"); break;
     case "invalid_mail":	setStatus("Your email doesn't seem to be complient", 						"danger"); break;
     case "banned_domain":	setStatus("We do not allow this domain",							"danger"); break;

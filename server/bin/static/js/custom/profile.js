@@ -31,8 +31,9 @@ $(document).ready(function(){
     payload={method:   $("#method").find(":selected").text(),   target:  $("#target").val(),
              username: $("#username").val(), message: $("#message").val() }
     $.getJSON('/_add_action', payload, function(data){
-      alert(data['status'])
-      parseStatus(data['status'])
+      if(parseStatus(data['status'])){
+        fillTable();
+      }
     })
   });
 
@@ -40,7 +41,6 @@ $(document).ready(function(){
 
   setTargetPlaceholder()
   fillTable();
-  activateButtons();
 });
 
 function setTargetPlaceholder(){
